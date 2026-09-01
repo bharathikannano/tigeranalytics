@@ -6,7 +6,7 @@ import type {
   SearchFilters,
 } from '../types/pricing';
 
-const BASE = '/api/pricing';
+const BASE = import.meta.env.VITE_API_URL || '/api/pricing';
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
