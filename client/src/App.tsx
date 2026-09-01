@@ -1,6 +1,7 @@
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
 import UploadPage from './pages/UploadPage';
 import SearchPage from './pages/SearchPage';
+import ArchitecturePage from './pages/ArchitecturePage';
 
 function NavItem({ to, label }: { to: string; label: string }) {
   return (
@@ -36,15 +37,17 @@ export default function App() {
             <nav className="flex gap-2">
               <NavItem to="/"       label="⬆ Upload Feeds" />
               <NavItem to="/search" label="🔍 Search & Edit" />
+              <NavItem to="/architecture" label="🏗️ Architecture" />
             </nav>
           </div>
         </header>
 
         {/* ── Page content ─────────────────────────────────────────── */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="flex-1 w-full flex flex-col">
           <Routes>
-            <Route path="/"       element={<UploadPage />} />
-            <Route path="/search" element={<SearchPage />} />
+            <Route path="/"       element={<div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8"><UploadPage /></div>} />
+            <Route path="/search" element={<div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8"><SearchPage /></div>} />
+            <Route path="/architecture" element={<ArchitecturePage />} />
           </Routes>
         </main>
 
