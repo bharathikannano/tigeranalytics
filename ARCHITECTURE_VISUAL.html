@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture — Retail Pricing Feed Management System</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --blue: #3b82f6;
+      --blue-d: #1d4ed8;
+      --blue-l: #dbeafe;
+      --blue-ll: #eff6ff;
+      --purple: #8b5cf6;
+      --purple-d: #6d28d9;
+      --purple-l: #ede9fe;
+      --purple-ll: #f5f3ff;
+      --green: #10b981;
+      --green-d: #047857;
+      --green-l: #d1fae5;
+      --green-ll: #ecfdf5;
+      --orange: #f59e0b;
+      --orange-d: #b45309;
+      --orange-l: #fef3c7;
+      --orange-ll: #fffbeb;
+      --rose: #f43f5e;
+      --rose-d: #be123c;
+      --rose-l: #ffe4e6;
+      --rose-ll: #fff1f2;
+      --cyan: #06b6d4;
+      --cyan-d: #0e7490;
+      --cyan-l: #cffafe;
+      --cyan-ll: #ecfeff;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+      color: var(--gray-900);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .site-header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e40af 100%);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .site-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(139, 92, 246, 0.3) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .site-header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #93c5fd, #c4b5fd, #67e8f9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .site-header p {
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 1rem;
+      position: relative;
+    }
+
+    .stack-badge {
+      display: inline-flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .stack-badge span {
+      padding: 0.25rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* NAV */
+    .toc {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.75rem 2rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .toc a {
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.2s;
+    }
+
+    .toc a:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    /* PAGE */
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    .section {
+      margin-bottom: 4rem;
+      background: #fff;
+      border-radius: 1.5rem;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 1.5rem 2rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-num {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .section-header p {
+      font-size: 0.85rem;
+      margin-top: 0.1rem;
+    }
+
+    .section-body {
+      padding: 0 2rem 2rem;
+    }
+
+    /* LEGEND */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--gray-100);
+      background: var(--gray-50);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--gray-700);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* CONTEXT DIAGRAM */
+    .ctx-wrap {
+      padding: 2rem 1rem;
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .ctx-left,
+    .ctx-right {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .ctx-actor {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 1.25rem;
+      border-radius: 1rem;
+      text-align: center;
+    }
+
+    .ctx-actor .icon {
+      font-size: 2.5rem;
+    }
+
+    .ctx-actor .lbl {
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .ctx-actor .sub {
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+
+    .ctx-int {
+      padding: 0.6rem 0.9rem;
+      border-radius: 0.75rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .ctx-system {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      border-radius: 1.25rem;
+      text-align: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, #1e40af, #4f46e5, #7c3aed);
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ctx-system::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1), transparent 60%);
+    }
+
+    .ctx-system .sys-icon {
+      font-size: 3rem;
+      position: relative;
+    }
+
+    .ctx-system h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      position: relative;
+    }
+
+    .ctx-system p {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      position: relative;
+    }
+
+    .api-badges {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+      position: relative;
+      width: 100%;
+    }
+
+    .api-badge {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 0.5rem;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .ctx-db {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 1.25rem;
+      border-radius: 1rem;
+      text-align: center;
+      background: var(--purple-l);
+      border: 2px solid var(--purple);
+    }
+
+    .ctx-db .icon {
+      font-size: 2rem;
+    }
+
+    .ctx-db .lbl {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--purple-d);
+    }
+
+    .ctx-db .sub {
+      font-size: 0.68rem;
+      color: var(--purple);
+    }
+
+    .ctx-db-tables {
+      font-size: 0.65rem;
+      color: var(--purple-d);
+      margin-top: 0.3rem;
+      line-height: 1.8;
+    }
+
+    /* LAYERS */
+    .layers {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      padding: 1.5rem 1rem;
+    }
+
+    .layer {
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 2px solid transparent;
+    }
+
+    .layer-header {
+      padding: 0.6rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .layer-body {
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .comp-card {
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      flex: 1;
+      min-width: 140px;
+      max-width: 220px;
+      border: 1.5px solid rgba(0, 0, 0, 0.08);
+      transition: transform 0.15s, box-shadow 0.15s;
+      cursor: default;
+    }
+
+    .comp-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .comp-card .c-icon {
+      font-size: 1.4rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .comp-card .c-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .comp-card .c-file {
+      font-size: 0.65rem;
+      font-family: 'Fira Code', monospace;
+      opacity: 0.65;
+    }
+
+    .comp-card .c-desc {
+      font-size: 0.68rem;
+      margin-top: 0.2rem;
+      opacity: 0.75;
+      line-height: 1.4;
+    }
+
+    .layer-conn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.25rem;
+    }
+
+    .conn-line {
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gray-200), var(--gray-300), var(--gray-200));
+    }
+
+    .conn-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      background: var(--gray-100);
+      border-radius: 9999px;
+      padding: 0.2rem 0.6rem;
+      border: 1px solid var(--gray-200);
+      white-space: nowrap;
+    }
+
+    .layer-blue {
+      border-color: var(--blue);
+      background: var(--blue-ll)
+    }
+
+    .layer-blue .layer-header {
+      background: linear-gradient(90deg, var(--blue-d), var(--blue))
+    }
+
+    .layer-blue .comp-card {
+      background: var(--blue-l)
+    }
+
+    .layer-blue .c-title {
+      color: var(--blue-d)
+    }
+
+    .layer-cyan {
+      border-color: var(--cyan);
+      background: var(--cyan-ll)
+    }
+
+    .layer-cyan .layer-header {
+      background: linear-gradient(90deg, var(--cyan-d), var(--cyan))
+    }
+
+    .layer-cyan .comp-card {
+      background: var(--cyan-l)
+    }
+
+    .layer-cyan .c-title {
+      color: var(--cyan-d)
+    }
+
+    .layer-orange {
+      border-color: var(--orange);
+      background: var(--orange-ll)
+    }
+
+    .layer-orange .layer-header {
+      background: linear-gradient(90deg, var(--orange-d), var(--orange))
+    }
+
+    .layer-orange .comp-card {
+      background: var(--orange-l)
+    }
+
+    .layer-orange .c-title {
+      color: var(--orange-d)
+    }
+
+    .layer-rose {
+      border-color: var(--rose);
+      background: var(--rose-ll)
+    }
+
+    .layer-rose .layer-header {
+      background: linear-gradient(90deg, var(--rose-d), var(--rose))
+    }
+
+    .layer-rose .comp-card {
+      background: var(--rose-l)
+    }
+
+    .layer-rose .c-title {
+      color: var(--rose-d)
+    }
+
+    .layer-green {
+      border-color: var(--green);
+      background: var(--green-ll)
+    }
+
+    .layer-green .layer-header {
+      background: linear-gradient(90deg, var(--green-d), var(--green))
+    }
+
+    .layer-green .comp-card {
+      background: var(--green-l)
+    }
+
+    .layer-green .c-title {
+      color: var(--green-d)
+    }
+
+    .layer-purple {
+      border-color: var(--purple);
+      background: var(--purple-ll)
+    }
+
+    .layer-purple .layer-header {
+      background: linear-gradient(90deg, var(--purple-d), var(--purple))
+    }
+
+    .layer-purple .comp-card {
+      background: var(--purple-l)
+    }
+
+    .layer-purple .c-title {
+      color: var(--purple-d)
+    }
+
+    /* FLOW DIAGRAM */
+    .flow-diagram {
+      padding: 1.5rem 1rem;
+      overflow-x: auto;
+    }
+
+    .participants {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: nowrap;
+    }
+
+    .participant {
+      flex: 1;
+      min-width: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      text-align: center;
+    }
+
+    .p-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      border: 2px solid rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
+
+    .p-name {
+      font-size: 0.68rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .p-sub {
+      font-size: 0.6rem;
+      opacity: 0.6;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .step-group {
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+
+    .sg-header {
+      padding: 0.55rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 0.75rem;
+      padding: 0.6rem 1rem;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      transition: filter 0.1s;
+    }
+
+    .step:last-child {
+      border-bottom: none;
+    }
+
+    .step:hover {
+      filter: brightness(0.97);
+    }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.12);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .step-arrow {
+      font-size: 0.72rem;
+      font-weight: 700;
+      opacity: 0.9;
+    }
+
+    .step-desc {
+      font-size: 0.72rem;
+      line-height: 1.4;
+      opacity: 0.85;
+    }
+
+    .step-code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.65rem;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 0.35rem;
+      padding: 0.15rem 0.4rem;
+      display: inline-block;
+      margin-top: 0.15rem;
+    }
+
+    .alt-block {
+      margin: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 2px dashed rgba(0, 0, 0, 0.15);
+    }
+
+    .alt-header {
+      padding: 0.3rem 0.75rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .alt-body {
+      padding: 0.5rem 0.75rem;
+    }
+
+    .alt-step {
+      font-size: 0.7rem;
+      padding: 0.2rem 0;
+      opacity: 0.9;
+    }
+
+    .alt-sep {
+      padding: 0.25rem 0.75rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.05);
+      border-top: 1px dashed rgba(0, 0, 0, 0.15);
+    }
+
+    .sg-blue {
+      background: var(--blue-ll);
+      border: 2px solid var(--blue)
+    }
+
+    .sg-blue .sg-header {
+      background: linear-gradient(90deg, var(--blue-d), var(--blue))
+    }
+
+    .sg-blue .step {
+      background: var(--blue-ll);
+      color: var(--blue-d)
+    }
+
+    .sg-blue .step-num {
+      background: var(--blue)
+    }
+
+    .sg-orange {
+      background: var(--orange-ll);
+      border: 2px solid var(--orange)
+    }
+
+    .sg-orange .sg-header {
+      background: linear-gradient(90deg, var(--orange-d), var(--orange))
+    }
+
+    .sg-orange .step {
+      background: var(--orange-ll);
+      color: var(--orange-d)
+    }
+
+    .sg-orange .step-num {
+      background: var(--orange)
+    }
+
+    .sg-green {
+      background: var(--green-ll);
+      border: 2px solid var(--green)
+    }
+
+    .sg-green .sg-header {
+      background: linear-gradient(90deg, var(--green-d), var(--green))
+    }
+
+    .sg-green .step {
+      background: var(--green-ll);
+      color: var(--green-d)
+    }
+
+    .sg-green .step-num {
+      background: var(--green)
+    }
+
+    .sg-rose {
+      background: var(--rose-ll);
+      border: 2px solid var(--rose)
+    }
+
+    .sg-rose .sg-header {
+      background: linear-gradient(90deg, var(--rose-d), var(--rose))
+    }
+
+    .sg-rose .step {
+      background: var(--rose-ll);
+      color: var(--rose-d)
+    }
+
+    .sg-rose .step-num {
+      background: var(--rose)
+    }
+
+    .sg-purple {
+      background: var(--purple-ll);
+      border: 2px solid var(--purple)
+    }
+
+    .sg-purple .sg-header {
+      background: linear-gradient(90deg, var(--purple-d), var(--purple))
+    }
+
+    .sg-purple .step {
+      background: var(--purple-ll);
+      color: var(--purple-d)
+    }
+
+    .sg-purple .step-num {
+      background: var(--purple)
+    }
+
+    .sg-cyan {
+      background: var(--cyan-ll);
+      border: 2px solid var(--cyan)
+    }
+
+    .sg-cyan .sg-header {
+      background: linear-gradient(90deg, var(--cyan-d), var(--cyan))
+    }
+
+    .sg-cyan .step {
+      background: var(--cyan-ll);
+      color: var(--cyan-d)
+    }
+
+    .sg-cyan .step-num {
+      background: var(--cyan)
+    }
+
+    /* API TABLE */
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem
+    }
+
+    .api-table th {
+      padding: 0.65rem 1rem;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--gray-900);
+      color: #fff
+    }
+
+    .api-table td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--gray-100)
+    }
+
+    .api-table tr:last-child td {
+      border-bottom: none
+    }
+
+    .api-table tr:hover td {
+      background: var(--gray-50)
+    }
+
+    .method {
+      display: inline-block;
+      border-radius: 0.35rem;
+      padding: 0.15rem 0.5rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.72rem;
+      font-weight: 700
+    }
+
+    .m-post {
+      background: #fef3c7;
+      color: #b45309
+    }
+
+    .m-get {
+      background: #d1fae5;
+      color: #065f46
+    }
+
+    .m-put {
+      background: #dbeafe;
+      color: #1d4ed8
+    }
+
+    .path-code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      color: var(--purple-d)
+    }
+
+    .res-code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.68rem;
+      color: var(--gray-700)
+    }
+
+    .site-footer {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.35);
+      font-size: 0.78rem
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="site-header">
+    <h1>&#127991; Retail Pricing Feed Management</h1>
+    <p>Architecture Diagrams &amp; System Design</p>
+    <div class="stack-badge">
+      <span>&#9883;&#65039; React 18</span>
+      <span>&#9889; Vite + TypeScript</span>
+      <span>&#127912; TailwindCSS</span>
+      <span>&#129001; Node.js + Express</span>
+      <span>&#128196; SQLite3 / WAL</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <a href="#ctx">&#9312; Context Diagram</a>
+    <a href="#comp">&#9313; Component Map</a>
+    <a href="#upload">&#9314; Upload Flow</a>
+    <a href="#search">&#9315; Search &amp; Edit Flow</a>
+    <a href="#api">&#9316; API Reference</a>
+  </nav>
+
+  <div class="page">
+
+    <!-- ① CONTEXT DIAGRAM -->
+    <section class="section" id="ctx">
+      <div class="section-header" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);">
+        <div class="section-num" style="background:var(--blue);">1</div>
+        <div>
+          <h2 style="color:#fff;">Context Diagram</h2>
+          <p style="color:rgba(255,255,255,0.7);">Who are the actors and what systems are involved?</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="ctx-wrap">
+          <!-- LEFT -->
+          <div class="ctx-left">
+            <div class="ctx-actor" style="background:var(--blue-l);border:2px solid var(--blue);">
+              <div class="icon">&#129489;&#8205;&#128188;</div>
+              <div class="lbl" style="color:var(--blue-d);">Store Manager</div>
+              <div class="sub" style="color:var(--blue);">Admin / Operator</div>
+            </div>
+            <div class="ctx-int" style="background:var(--blue-l);color:var(--blue-d);border:1px solid var(--blue);">
+              <span style="font-weight:800;color:var(--blue);flex-shrink:0;">&#9312;</span>
+              Upload CSV feed files via drag-and-drop browser UI
+            </div>
+            <div class="ctx-int" style="background:var(--cyan-l);color:var(--cyan-d);border:1px solid var(--cyan);">
+              <span style="font-weight:800;color:var(--cyan);flex-shrink:0;">&#9313;</span>
+              Search &amp; filter pricing records with 7 filter fields
+            </div>
+            <div class="ctx-int" style="background:var(--green-l);color:var(--green-d);border:1px solid var(--green);">
+              <span style="font-weight:800;color:var(--green);flex-shrink:0;">&#9314;</span>
+              Edit individual records inline &mdash; no page reload required
+            </div>
+            <div class="ctx-actor" style="background:var(--orange-l);border:2px solid var(--orange);">
+              <div class="icon">&#128196;</div>
+              <div class="lbl" style="color:var(--orange-d);">CSV Price Feeds</div>
+              <div class="sub" style="color:var(--orange);">From retail store ops team</div>
+            </div>
+          </div>
+          <!-- CENTRE system -->
+          <div class="ctx-system">
+            <div class="sys-icon">&#128187;</div>
+            <h3>Pricing Feed<br />Management System</h3>
+            <p>Full-stack web application<br />React UI + Express REST API</p>
+            <div class="api-badges">
+              <div class="api-badge">POST /api/pricing/upload</div>
+              <div class="api-badge">GET&nbsp; /api/pricing?filters</div>
+              <div class="api-badge">PUT&nbsp; /api/pricing/:id</div>
+              <div class="api-badge">GET&nbsp; /api/pricing/upload-logs</div>
+            </div>
+          </div>
+          <!-- RIGHT -->
+          <div class="ctx-right">
+            <div class="ctx-int"
+              style="background:var(--purple-l);color:var(--purple-d);border:1px solid var(--purple);">
+              <span style="font-weight:800;color:var(--purple);flex-shrink:0;">&#8594;</span>
+              Read/write pricing records via prepared statements + covering indexes
+            </div>
+            <div class="ctx-db">
+              <div class="icon">&#128452;</div>
+              <div class="lbl">SQLite3 Database</div>
+              <div class="sub">WAL mode &middot; 2 tables &middot; 5 indexes</div>
+              <div class="ctx-db-tables">&#128203; pricing_records<br />&#128219; upload_logs</div>
+            </div>
+            <div class="ctx-int"
+              style="background:var(--purple-l);color:var(--purple-d);border:1px solid var(--purple);">
+              <span style="font-weight:800;color:var(--purple);flex-shrink:0;">&#8594;</span>
+              Append upload audit log entry on every upload attempt
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--blue);"></div>Actor (user)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4f46e5;"></div>System boundary
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--orange);"></div>External input (CSV)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--purple);"></div>Database
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--green);"></div>Successful interaction
+        </div>
+      </div>
+    </section>
+
+    <!-- ② COMPONENT MAP -->
+    <section class="section" id="comp">
+      <div class="section-header" style="background:linear-gradient(135deg,#064e3b,#047857);">
+        <div class="section-num" style="background:var(--green);">2</div>
+        <div>
+          <h2 style="color:#fff;">Component Map</h2>
+          <p style="color:rgba(255,255,255,0.7);">Every file and its role, organized by architectural layer</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="layers">
+
+          <div class="layer layer-blue">
+            <div class="layer-header">&#127758; Browser &middot; Pages <span
+                style="opacity:0.7;font-weight:400;margin-left:auto;">localhost:5173</span></div>
+            <div class="layer-body">
+              <div class="comp-card">
+                <div class="c-icon">&#128506;</div>
+                <div class="c-title">App.tsx</div>
+                <div class="c-file">src/App.tsx</div>
+                <div class="c-desc">Root component. BrowserRouter, top nav bar, route declarations for Upload &amp;
+                  Search pages.</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#11014;&#65039;</div>
+                <div class="c-title">UploadPage</div>
+                <div class="c-file">src/pages/UploadPage.tsx</div>
+                <div class="c-desc">Manages file selection, XHR progress state, success/error banners, and upload
+                  history table.</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#128269;</div>
+                <div class="c-title">SearchPage</div>
+                <div class="c-file">src/pages/SearchPage.tsx</div>
+                <div class="c-desc">Orchestrates filter state, loading skeleton, paginated results, and edit callbacks.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="layer-conn">
+            <div class="conn-line"></div>
+            <div class="conn-label">&#11015; Pages use Components</div>
+            <div class="conn-line"></div>
+          </div>
+
+          <div class="layer layer-cyan">
+            <div class="layer-header">&#129513; Browser &middot; UI Components</div>
+            <div class="layer-body">
+              <div class="comp-card">
+                <div class="c-icon">&#128194;</div>
+                <div class="c-title">UploadDropzone</div>
+                <div class="c-file">src/components/UploadDropzone.tsx</div>
+                <div class="c-desc">Drag-and-drop zone + hidden file input. Visual drag-state. Accepts .csv only.</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#127907;</div>
+                <div class="c-title">FilterBar</div>
+                <div class="c-file">src/components/FilterBar.tsx</div>
+                <div class="c-desc">7-field filter form (store, sku, name, dates, price range) + sort selects +
+                  page-size control.</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#128202;</div>
+                <div class="c-title">PricingTable</div>
+                <div class="c-file">src/components/PricingTable.tsx</div>
+                <div class="c-desc">Data grid with per-row toggle between read view and inline edit mode. Save/Cancel
+                  actions.</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#128196;</div>
+                <div class="c-title">Pagination</div>
+                <div class="c-file">src/components/Pagination.tsx</div>
+                <div class="c-desc">Smart page-number strip with &#177;2 window and ellipsis. Prev/Next buttons.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="layer-conn">
+            <div class="conn-line"></div>
+            <div class="conn-label">&#11015; Components call API layer</div>
+            <div class="conn-line"></div>
+          </div>
+
+          <div class="layer layer-orange">
+            <div class="layer-header">&#128225; Browser &middot; API Client + Types</div>
+            <div class="layer-body">
+              <div class="comp-card">
+                <div class="c-icon">&#128241;</div>
+                <div class="c-title">api/pricing.ts</div>
+                <div class="c-file">src/api/pricing.ts</div>
+                <div class="c-desc">uploadCsv() via XHR (progress events) &middot; searchPricing() &middot;
+                  updatePricingRecord() &middot; getUploadLogs()</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#127991;</div>
+                <div class="c-title">types/pricing.ts</div>
+                <div class="c-file">src/types/pricing.ts</div>
+                <div class="c-desc">PricingRecord &middot; UploadLog &middot; Pagination &middot; UploadSuccessResponse
+                  &middot; ValidationErrorResponse &middot; SearchFilters</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="layer-conn">
+            <div class="conn-line"></div>
+            <div class="conn-label">&#11015; HTTP through Vite /api proxy &#8594; port 4000</div>
+            <div class="conn-line"></div>
+          </div>
+
+          <div class="layer layer-rose">
+            <div class="layer-header">&#128737; Server &middot; Middleware Stack <span
+                style="opacity:0.7;font-weight:400;margin-left:auto;">localhost:4000</span></div>
+            <div class="layer-body">
+              <div class="comp-card">
+                <div class="c-icon">&#9881;&#65039;</div>
+                <div class="c-title">app.js</div>
+                <div class="c-file">server/src/app.js</div>
+                <div class="c-desc">helmet &#8594; cors &#8594; morgan &#8594; rate-limit (200/min) &#8594; body-parser
+                  &#8594; routes</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#9989;</div>
+                <div class="c-title">validatePricing.js</div>
+                <div class="c-file">server/src/middleware/</div>
+                <div class="c-desc">validateCsvRow() per CSV row &middot; updatePricingValidators for PUT body via
+                  express-validator</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#128680;</div>
+                <div class="c-title">errorHandler.js</div>
+                <div class="c-file">server/src/middleware/</div>
+                <div class="c-desc">Central catch-all. Multer 413/415, validation 422, generic 500. Strips stack traces
+                  in production.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="layer-conn">
+            <div class="conn-line"></div>
+            <div class="conn-label">&#11015; Middleware dispatches to Route Handlers</div>
+            <div class="conn-line"></div>
+          </div>
+
+          <div class="layer layer-green">
+            <div class="layer-header">&#128739; Server &middot; Route Handlers</div>
+            <div class="layer-body">
+              <div class="comp-card">
+                <div class="c-icon">&#128236;</div>
+                <div class="c-title">POST /upload</div>
+                <div class="c-file">routes/pricing.js</div>
+                <div class="c-desc">multer &#8594; PapaParse &#8594; validateCsvRow &#215; N &#8594; transactional bulk
+                  INSERT</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#128203;</div>
+                <div class="c-title">GET /</div>
+                <div class="c-file">routes/pricing.js</div>
+                <div class="c-desc">7 LIKE/range filter conditions &#8594; COUNT(*) &#8594; paginated SELECT &#8594;
+                  JSON</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#9999;&#65039;</div>
+                <div class="c-title">PUT /:id</div>
+                <div class="c-file">routes/pricing.js</div>
+                <div class="c-desc">COALESCE partial UPDATE &mdash; only supplied fields are written, others unchanged
+                </div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#128220;</div>
+                <div class="c-title">GET /upload-logs</div>
+                <div class="c-file">routes/pricing.js</div>
+                <div class="c-desc">Paginated audit history from upload_logs table</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="layer-conn">
+            <div class="conn-line"></div>
+            <div class="conn-label">&#11015; Reads/Writes via parameterised prepared statements</div>
+            <div class="conn-line"></div>
+          </div>
+
+          <div class="layer layer-purple">
+            <div class="layer-header">&#128452; Database &middot; SQLite3 &mdash; WAL mode, 64 MB cache, FK constraints
+            </div>
+            <div class="layer-body">
+              <div class="comp-card">
+                <div class="c-icon">&#128451;</div>
+                <div class="c-title">pricing_records</div>
+                <div class="c-file">schema in db.js</div>
+                <div class="c-desc">id &middot; store_id &middot; sku &middot; product_name &middot; price &middot;
+                  record_date &middot; upload_id (FK) &middot; created_at &middot; updated_at</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#128219;</div>
+                <div class="c-title">upload_logs</div>
+                <div class="c-file">schema in db.js</div>
+                <div class="c-desc">id &middot; file_name &middot; row_count &middot; error_count &middot; status
+                  (success|partial|failed) &middot; created_at</div>
+              </div>
+              <div class="comp-card">
+                <div class="c-icon">&#9889;</div>
+                <div class="c-title">5 Indexes</div>
+                <div class="c-file">db.js</div>
+                <div class="c-desc">store_id &middot; sku &middot; record_date &middot; (store_id, sku) &middot;
+                  product_name COLLATE NOCASE</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ③ UPLOAD FLOW -->
+    <section class="section" id="upload">
+      <div class="section-header" style="background:linear-gradient(135deg,#92400e,#d97706);">
+        <div class="section-num" style="background:var(--orange);">3</div>
+        <div>
+          <h2 style="color:#fff;">Upload Flow &mdash; Step by Step</h2>
+          <p style="color:rgba(255,255,255,0.7);">From file drop to records committed in the database</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="flow-diagram">
+          <div class="participants">
+            <div class="participant">
+              <div class="p-icon" style="background:var(--blue-l);border-color:var(--blue);">&#129489;</div>
+              <div class="p-name" style="color:var(--blue-d);">Admin</div>
+              <div class="p-sub">User</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--cyan-l);border-color:var(--cyan);">&#9883;</div>
+              <div class="p-name" style="color:var(--cyan-d);">UploadPage</div>
+              <div class="p-sub">React</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--orange-l);border-color:var(--orange);">&#128241;</div>
+              <div class="p-name" style="color:var(--orange-d);">XHR</div>
+              <div class="p-sub">Progress events</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--rose-l);border-color:var(--rose);">&#128737;</div>
+              <div class="p-name" style="color:var(--rose-d);">multer</div>
+              <div class="p-sub">File guard</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--orange-l);border-color:var(--orange);">&#128196;</div>
+              <div class="p-name" style="color:var(--orange-d);">PapaParse</div>
+              <div class="p-sub">CSV parser</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--rose-l);border-color:var(--rose);">&#9989;</div>
+              <div class="p-name" style="color:var(--rose-d);">Validator</div>
+              <div class="p-sub">Row checker</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--green-l);border-color:var(--green);">&#128190;</div>
+              <div class="p-name" style="color:var(--green-d);">SQLite TX</div>
+              <div class="p-sub">Transaction</div>
+            </div>
+          </div>
+          <div class="steps">
+
+            <div class="step-group sg-blue">
+              <div class="sg-header">&#128194; Phase 1 &mdash; File Selection</div>
+              <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                  <div class="step-arrow">&#129489; &#8594; UploadPage</div>
+                  <div class="step-desc">Admin drops CSV onto the drag-and-drop zone, or clicks to browse files</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                  <div class="step-arrow">UploadPage &#8594; UI</div>
+                  <div class="step-desc">Shows file name, size preview, enables the &#11014; Upload button</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                  <div class="step-arrow">&#129489; clicks Upload &#8594; UploadPage</div>
+                  <div class="step-desc">Triggers handleUpload(), sets status='uploading', clears previous errors</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-group sg-orange">
+              <div class="sg-header">&#128225; Phase 2 &mdash; Network Transfer (XHR with progress)</div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                  <div class="step-arrow">UploadPage &#8594; XHR</div>
+                  <div class="step-desc">Opens XHR POST with file wrapped in FormData (multipart/form-data)</div>
+                  <div class="step-code">POST /api/pricing/upload</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-content">
+                  <div class="step-arrow">XHR &#8594; UploadPage (continuous)</div>
+                  <div class="step-desc">upload.progress events fire as bytes are sent &#8594; progress bar % updates in
+                    real time</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-group sg-rose">
+              <div class="sg-header">&#128737; Phase 3 &mdash; File Guard (multer)</div>
+              <div class="step">
+                <div class="step-num">6</div>
+                <div class="step-content">
+                  <div class="step-arrow">Express &#8594; multer fileFilter</div>
+                  <div class="step-desc">Checks MIME type: text/csv, application/vnd.ms-excel, text/plain, or .csv
+                    extension</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">7</div>
+                <div class="step-content">
+                  <div class="step-arrow">multer &#8594; size check</div>
+                  <div class="step-desc">Enforces max file size &#8804; 50 MB (configurable via UPLOAD_SIZE_LIMIT_MB env
+                    var)</div>
+                </div>
+              </div>
+              <div class="alt-block" style="border-color:var(--rose);">
+                <div class="alt-header" style="color:var(--rose-d);">&#10060; Wrong file type &#8594; HTTP 415
+                  Unsupported Media Type &#8594; error banner shown</div>
+                <div class="alt-body" style="color:var(--rose-d);">
+                  <div class="alt-step">multer &#8594; errorHandler &#8594; { error: "Invalid file type" } &#8594; flow
+                    ends</div>
+                </div>
+                <div class="alt-sep" style="color:var(--rose-d);">&#10060; File too large &#8594; HTTP 413 Payload Too
+                  Large &#8594; error banner shown</div>
+                <div class="alt-body" style="color:var(--rose-d);">
+                  <div class="alt-step">multer LIMIT_FILE_SIZE &#8594; errorHandler &#8594; { error: "File too large" }
+                    &#8594; flow ends</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-group sg-orange">
+              <div class="sg-header">&#128196; Phase 4 &mdash; CSV Parsing (PapaParse, in-memory)</div>
+              <div class="step">
+                <div class="step-num">8</div>
+                <div class="step-content">
+                  <div class="step-arrow">Route handler &#8594; PapaParse</div>
+                  <div class="step-desc">Parses CSV from in-memory Buffer with header:true, skipEmptyLines:true</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">9</div>
+                <div class="step-content">
+                  <div class="step-arrow">Header normalisation</div>
+                  <div class="step-desc">Headers trimmed, lowercased, spaces &#8594; underscores&nbsp;&nbsp;e.g. "Store
+                    ID" &#8594; "store_id"</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">10</div>
+                <div class="step-content">
+                  <div class="step-arrow">Column check</div>
+                  <div class="step-desc">Verifies all 5 required columns: store_id, sku, product_name, price, date</div>
+                </div>
+              </div>
+              <div class="alt-block" style="border-color:var(--orange);">
+                <div class="alt-header" style="color:var(--orange-d);">&#10060; Missing column &#8594; HTTP 422
+                  MissingColumns { expected: [...], found: [...] } &#8594; flow ends</div>
+              </div>
+            </div>
+
+            <div class="step-group sg-rose">
+              <div class="sg-header">&#9989; Phase 5 &mdash; Row-Level Validation (all-or-nothing)</div>
+              <div class="step">
+                <div class="step-num">11</div>
+                <div class="step-content">
+                  <div class="step-arrow">Route &#8594; validateCsvRow() &#215; N rows</div>
+                  <div class="step-desc">Per row: store_id required &middot; sku required &middot; product_name required
+                    &middot; price &#8805; 0 numeric &middot; date parseable</div>
+                </div>
+              </div>
+              <div class="alt-block" style="border-color:var(--rose);">
+                <div class="alt-header" style="color:var(--rose-d);">&#10060; Any row invalid &#8594; HTTP 422
+                  ValidationErrors &mdash; NOTHING written to DB</div>
+                <div class="alt-body" style="color:var(--rose-d);">
+                  <div class="alt-step">Full row-error array returned e.g. "Row 3: price must be non-negative (got
+                    'free')"</div>
+                  <div class="alt-step">UploadPage renders scrollable list &#8594; admin fixes CSV and re-uploads</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-group sg-green">
+              <div class="sg-header">&#128190; Phase 6 &mdash; Atomic Database Write (SQLite transaction)</div>
+              <div class="step">
+                <div class="step-num">12</div>
+                <div class="step-content">
+                  <div class="step-arrow">Route &#8594; SQLite transaction BEGIN</div>
+                  <div class="step-desc">Both the audit log insert and all record inserts are wrapped in one atomic
+                    transaction</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">13</div>
+                <div class="step-content">
+                  <div class="step-arrow">INSERT upload_logs</div>
+                  <div class="step-desc">Audit entry created: id, filename, row_count, error_count=0, status='success'
+                  </div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">14</div>
+                <div class="step-content">
+                  <div class="step-arrow">INSERT pricing_records &#215; N</div>
+                  <div class="step-desc">Bulk inserts all rows. Dates normalised to YYYY-MM-DD. Prices cast to REAL.
+                  </div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">15</div>
+                <div class="step-content">
+                  <div class="step-arrow">COMMIT &#8594; HTTP 201 &#8594; UploadPage</div>
+                  <div class="step-desc">Returns uploadId, rowsInserted, fileName to client</div>
+                  <div class="step-code">{ message: "Upload successful", uploadId, rowsInserted: N }</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">16</div>
+                <div class="step-content">
+                  <div class="step-arrow">UploadPage &#8594; UI</div>
+                  <div class="step-desc">&#9989; Success banner shown &middot; Upload History table refreshes with new
+                    log entry</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ④ SEARCH & EDIT FLOW -->
+    <section class="section" id="search">
+      <div class="section-header" style="background:linear-gradient(135deg,#4a1d96,#7c3aed);">
+        <div class="section-num" style="background:var(--purple);">4</div>
+        <div>
+          <h2 style="color:#fff;">Search &amp; Edit Flow &mdash; Step by Step</h2>
+          <p style="color:rgba(255,255,255,0.7);">Filtering, pagination, and inline row editing end-to-end</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="flow-diagram">
+          <div class="participants">
+            <div class="participant">
+              <div class="p-icon" style="background:var(--blue-l);border-color:var(--blue);">&#129489;</div>
+              <div class="p-name" style="color:var(--blue-d);">Admin</div>
+              <div class="p-sub">User</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--cyan-l);border-color:var(--cyan);">&#127907;</div>
+              <div class="p-name" style="color:var(--cyan-d);">FilterBar</div>
+              <div class="p-sub">Search form</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--blue-l);border-color:var(--blue);">&#128269;</div>
+              <div class="p-name" style="color:var(--blue-d);">SearchPage</div>
+              <div class="p-sub">State manager</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--orange-l);border-color:var(--orange);">&#128225;</div>
+              <div class="p-name" style="color:var(--orange-d);">api/pricing</div>
+              <div class="p-sub">HTTP client</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--green-l);border-color:var(--green);">&#128739;</div>
+              <div class="p-name" style="color:var(--green-d);">Express Route</div>
+              <div class="p-sub">GET &middot; PUT</div>
+            </div>
+            <div class="participant">
+              <div class="p-icon" style="background:var(--purple-l);border-color:var(--purple);">&#128452;</div>
+              <div class="p-name" style="color:var(--purple-d);">SQLite</div>
+              <div class="p-sub">Database</div>
+            </div>
+          </div>
+          <div class="steps">
+
+            <div class="step-group sg-cyan">
+              <div class="sg-header">&#128640; Phase A &mdash; Auto-search on Mount</div>
+              <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                  <div class="step-arrow">SearchPage useEffect &#8594; searchPricing(DEFAULT_FILTERS)</div>
+                  <div class="step-desc">Fires automatically when the page first loads &mdash; shows the latest 50
+                    records immediately without any user action</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-group sg-blue">
+              <div class="sg-header">&#128269; Phase B &mdash; Filtered Search</div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                  <div class="step-arrow">&#129489; &#8594; FilterBar</div>
+                  <div class="step-desc">Admin fills filter fields: Store ID, SKU, Product Name, Date From/To, Min/Max
+                    Price, Sort column/direction</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                  <div class="step-arrow">&#129489; clicks Search &#8594; SearchPage</div>
+                  <div class="step-desc">onSearch() fires, loading skeleton shown, previous results cleared</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                  <div class="step-arrow">SearchPage &#8594; api/pricing &#8594; Express</div>
+                  <div class="step-desc">Builds URLSearchParams from filter state, fires GET request</div>
+                  <div class="step-code">GET
+                    /api/pricing?storeId=STORE-001&amp;page=1&amp;pageSize=50&amp;sortBy=price&amp;sortDir=asc</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-content">
+                  <div class="step-arrow">Express &#8594; allowlist check</div>
+                  <div class="step-desc">sortBy and sortDir validated against hardcoded arrays before SQL interpolation
+                    &mdash; prevents ORDER BY injection</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">6</div>
+                <div class="step-content">
+                  <div class="step-arrow">Express &#8594; SQLite (2 queries)</div>
+                  <div class="step-desc">&#9312; SELECT COUNT(*) WHERE [conditions] &#8594; total&nbsp;&nbsp; &#9313;
+                    SELECT * WHERE [conditions] ORDER BY &#8230; LIMIT 50 OFFSET 0</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">7</div>
+                <div class="step-content">
+                  <div class="step-arrow">SQLite &#8594; Express &#8594; SearchPage &#8594; UI</div>
+                  <div class="step-desc">Table renders rows, "X records found" counter updates, Pagination strip appears
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-group sg-purple">
+              <div class="sg-header">&#128196; Phase C &mdash; Pagination</div>
+              <div class="step">
+                <div class="step-num">8</div>
+                <div class="step-content">
+                  <div class="step-arrow">&#129489; clicks page N &#8594; SearchPage</div>
+                  <div class="step-desc">handlePageChange(N) updates filter state and re-fires the same search query
+                  </div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">9</div>
+                <div class="step-content">
+                  <div class="step-arrow">Express &#8594; SQLite</div>
+                  <div class="step-desc">Same filter conditions with OFFSET = (N-1) &#215; pageSize &mdash; only that
+                    page's rows fetched</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">10</div>
+                <div class="step-content">
+                  <div class="step-arrow">SQLite &#8594; UI</div>
+                  <div class="step-desc">Table refreshes with page N rows. Pagination strip highlights new current page.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-group sg-green">
+              <div class="sg-header">&#9999;&#65039; Phase D &mdash; Inline Edit</div>
+              <div class="step">
+                <div class="step-num">11</div>
+                <div class="step-content">
+                  <div class="step-arrow">&#129489; clicks &#9999; Edit &#8594; PricingTable</div>
+                  <div class="step-desc">setEditingId(row.id) &mdash; that row switches from read-only text to input
+                    fields (store, sku, name, price, date)</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">12</div>
+                <div class="step-content">
+                  <div class="step-arrow">&#129489; changes a field value</div>
+                  <div class="step-desc">e.g. Updates Price from 9.99 to 11.49 in the price input</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">13</div>
+                <div class="step-content">
+                  <div class="step-arrow">&#129489; clicks &#10003; Save &#8594; api/pricing</div>
+                  <div class="step-desc">updatePricingRecord(id, editState) called &mdash; only the changed fields are
+                    sent in the request body</div>
+                  <div class="step-code">PUT /api/pricing/:id&nbsp;&nbsp;{ "price": 11.49 }</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">14</div>
+                <div class="step-content">
+                  <div class="step-arrow">Express &#8594; express-validator</div>
+                  <div class="step-desc">Validates: price &#8805; 0, store_id length &#8804; 100, record_date is
+                    ISO-8601, etc.</div>
+                </div>
+              </div>
+              <div class="alt-block" style="border-color:var(--rose);">
+                <div class="alt-header" style="color:var(--rose-d);">&#10060; Validation fails &#8594; HTTP 422
+                  ValidationErrors &#8594; inline save-error message shown in row</div>
+                <div class="alt-sep" style="color:var(--green-d);">&#9989; Validation passes &#8594; continue below
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">15</div>
+                <div class="step-content">
+                  <div class="step-arrow">Express &#8594; SQLite</div>
+                  <div class="step-desc">UPDATE pricing_records SET price = COALESCE(11.49, price), updated_at = now()
+                    WHERE id = :id</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">16</div>
+                <div class="step-content">
+                  <div class="step-arrow">SQLite &#8594; Express &#8594; SearchPage &#8594; UI</div>
+                  <div class="step-desc">HTTP 200 returns the full updated record. Record is replaced in local React
+                    state &mdash; no page reload. Row reverts to read view with new value &#9989;</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑤ API REFERENCE -->
+    <section class="section" id="api">
+      <div class="section-header" style="background:linear-gradient(135deg,#064e3b,#065f46);">
+        <div class="section-num" style="background:var(--green);">5</div>
+        <div>
+          <h2 style="color:#fff;">REST API Reference</h2>
+          <p style="color:rgba(255,255,255,0.7);">All endpoints on the Express server (port 4000)</p>
+        </div>
+      </div>
+      <div class="section-body" style="padding-top:1.5rem;">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Path</th>
+              <th>Description</th>
+              <th>Response</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="method m-post">POST</span></td>
+              <td><span class="path-code">/api/pricing/upload</span></td>
+              <td>Upload CSV &mdash; validates all rows, bulk-inserts atomically</td>
+              <td><span class="res-code">201 { uploadId, rowsInserted, fileName }</span></td>
+            </tr>
+            <tr>
+              <td><span class="method m-get">GET</span></td>
+              <td><span class="path-code">/api/pricing</span></td>
+              <td>List/filter records &mdash; 7 query params, paginated, sortable</td>
+              <td><span class="res-code">200 { data: [], pagination: {} }</span></td>
+            </tr>
+            <tr>
+              <td><span class="method m-put">PUT</span></td>
+              <td><span class="path-code">/api/pricing/:id</span></td>
+              <td>Partial update &mdash; send only the fields you want to change</td>
+              <td><span class="res-code">200 { message, data: record }</span></td>
+            </tr>
+            <tr>
+              <td><span class="method m-get">GET</span></td>
+              <td><span class="path-code">/api/pricing/upload-logs</span></td>
+              <td>Paginated upload audit history with status and row counts</td>
+              <td><span class="res-code">200 { data: [], pagination: {} }</span></td>
+            </tr>
+            <tr>
+              <td><span class="method m-get">GET</span></td>
+              <td><span class="path-code">/health</span></td>
+              <td>Server health check</td>
+              <td><span class="res-code">200 { status: "ok", ts }</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+  <footer class="site-footer">Retail Pricing Feed Management System &mdash; Architecture Diagrams</footer>
+</body>
+
+</html>
