@@ -1,3 +1,13 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// api/pricing.ts
+// All HTTP calls to the backend live here.
+// Components never use fetch() directly — they call these functions instead.
+//
+// BASE URL:
+//   • Local dev  → proxied by Vite to http://localhost:4000 (see vite.config.ts)
+//   • Production → set VITE_API_URL env var in Amplify console
+// ─────────────────────────────────────────────────────────────────────────────
+
 import type {
   PricingListResponse,
   UploadLogsResponse,
@@ -8,6 +18,9 @@ import type {
 
 const BASE = import.meta.env.VITE_API_URL || '/api/pricing';
 
+// ── Shared helper ─────────────────────────────────────────────────────────────
+// Throws a structured error for any non-2xx response so callers can rely on
+// try/catch instead of checking res.ok manually.
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const err: ValidationErrorResponse = await res.json().catch(() => ({
@@ -19,26 +32,25 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function uploadCsv(
-  file: File,
-  onProgress?: (pct: number) => void
-): Promise<UploadSuccessResponse> {
+// ── Upload CSV ────────────────────────────────────────────────────────────────
+// Uses XHR (instead of fetch) so we can track real upload progress.
+// onProgress receives a 0-100 percentage value.
+export function uploadCsv(file: File, onProgress?: (pct: number) => void): Promise<UploadSuccessResponse> {
   return new Promise((resolve, reject) => {
-    const formData = new FormData();
-    formData.append('file', file);
+    const form = new FormData();
+    form.append('file', file);
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${BASE}/upload`);
 
-    xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable && onProgress) {
-        onProgress(Math.round((e.loaded / e.total) * 100));
-      }
-    });
+    // Fire onProgress as bytes are sent
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100));
+    };
 
-    xhr.addEventListener('load', () => {
+    xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(JSON.parse(xhr.responseText) as UploadSuccessResponse);
+        resolve(JSON.parse(xhr.responseText));
       } else {
         try {
           const err: ValidationErrorResponse = JSON.parse(xhr.responseText);
@@ -47,41 +59,39 @@ export async function uploadCsv(
           reject(new Error(`Upload failed: ${xhr.statusText}`));
         }
       }
-    });
+    };
 
-    xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
-    xhr.send(formData);
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.send(form);
   });
 }
 
-export async function searchPricing(filters: SearchFilters): Promise<PricingListResponse> {
+// ── Search pricing records ────────────────────────────────────────────────────
+// Converts the SearchFilters object to query-string params and fetches results.
+export function searchPricing(filters: SearchFilters): Promise<PricingListResponse> {
   const params = new URLSearchParams();
-  Object.entries(filters).forEach(([ k, v ]) => {
+  // Only include non-empty filter values in the request
+  Object.entries(filters).forEach(([k, v]) => {
     if (v !== undefined && v !== '') params.set(k, String(v));
   });
-  const res = await fetch(`${BASE}?${params.toString()}`);
-  return handleResponse<PricingListResponse>(res);
+  return fetch(`${BASE}?${params}`).then(handleResponse<PricingListResponse>);
 }
 
-export async function updatePricingRecord(
+// ── Update a single pricing record ────────────────────────────────────────────
+// Sends only the changed fields; the server merges them with the existing row.
+export function updatePricingRecord(
   id: string,
-  data: Partial<{
-    store_id: string;
-    sku: string;
-    product_name: string;
-    price: number;
-    record_date: string;
-  }>
+  data: Partial<Pick<import('../types/pricing').PricingRecord, 'store_id' | 'sku' | 'product_name' | 'price' | 'record_date'>>
 ) {
-  const res = await fetch(`${BASE}/${id}`, {
+  return fetch(`${BASE}/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  });
-  return handleResponse<{ message: string; data: unknown }>(res);
+  }).then(handleResponse<{ message: string; data: unknown }>);
 }
 
-export async function getUploadLogs(page = 1, pageSize = 20): Promise<UploadLogsResponse> {
-  const res = await fetch(`${BASE}/upload-logs?page=${page}&pageSize=${pageSize}`);
-  return handleResponse<UploadLogsResponse>(res);
+// ── Fetch upload history logs ─────────────────────────────────────────────────
+export function getUploadLogs(page = 1, pageSize = 20): Promise<UploadLogsResponse> {
+  return fetch(`${BASE}/upload-logs?page=${page}&pageSize=${pageSize}`)
+    .then(handleResponse<UploadLogsResponse>);
 }
