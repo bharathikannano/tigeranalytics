@@ -385,6 +385,90 @@ cd client && npm install && npm run dev
 curl -F "file=@sample_feed.csv" http://localhost:4000/api/pricing/upload
 ```
 
+### Sample Queries & API Invocations
+
+#### 1. Store & SKU Lookup (Exact / Prefix match)
+```bash
+# cURL
+curl -s "http://localhost:4000/api/pricing?storeId=STORE-001&sku=ABC-001"
+```
+**Underlying SQL:**
+```sql
+SELECT * FROM pricing_records 
+WHERE store_id LIKE @storeId AND sku LIKE @sku 
+ORDER BY created_at desc LIMIT 50 OFFSET 0;
+```
+*Utilizes covering index `idx_pricing_store_sku (store_id, sku)`.*
+
+#### 2. Fuzzy Product Name & Price Range Filter
+```bash
+# cURL
+curl -s "http://localhost:4000/api/pricing?productName=widget&minPrice=5.00&maxPrice=50.00"
+```
+**Underlying SQL:**
+```sql
+SELECT * FROM pricing_records 
+WHERE product_name LIKE @productName COLLATE NOCASE 
+  AND price >= @minPrice AND price <= @maxPrice 
+ORDER BY created_at desc LIMIT 50 OFFSET 0;
+```
+*Utilizes case-insensitive index `idx_pricing_name (product_name COLLATE NOCASE)`.*
+
+#### 3. Date Range Filter with Sorting & Pagination
+```bash
+# cURL
+curl -s "http://localhost:4000/api/pricing?dateFrom=2024-01-01&dateTo=2024-01-31&sortBy=price&sortDir=desc&page=2&pageSize=20"
+```
+**Underlying SQL:**
+```sql
+SELECT * FROM pricing_records 
+WHERE record_date >= @dateFrom AND record_date <= @dateTo 
+ORDER BY price desc LIMIT 20 OFFSET 20;
+```
+*Utilizes index `idx_pricing_date (record_date)` with validated allowlist sort.*
+
+#### 4. Upload Audit History Query
+```bash
+# cURL
+curl -s "http://localhost:4000/api/pricing/upload-logs?page=1&pageSize=10"
+```
+**Underlying SQL:**
+```sql
+SELECT COUNT(*) as count FROM upload_logs;
+SELECT * FROM upload_logs ORDER BY created_at DESC LIMIT 10 OFFSET 0;
+```
+*Cached via TanStack Query under key `['upload-logs']`.*
+
+#### 5. Inline Partial Record Update (PUT)
+```bash
+# cURL
+curl -X PUT "http://localhost:4000/api/pricing/01923a-bc4d" \
+  -H "Content-Type: application/json" \
+  -d '{"price": 14.99, "product_name": "Pro Widget Deluxe"}'
+```
+**Underlying SQL:**
+```sql
+UPDATE pricing_records 
+SET product_name = COALESCE(@product_name, product_name), 
+    price        = COALESCE(@price, price), 
+    updated_at   = strftime('%Y-%m-%dT%H:%M:%fZ','now') 
+WHERE id = @id;
+```
+
+#### 6. Atomic CSV Feed Ingestion (POST)
+```bash
+# cURL
+curl -X POST "http://localhost:4000/api/pricing/upload" \
+  -F "file=@sample_feed.csv"
+```
+**Underlying SQL Transaction:**
+```sql
+BEGIN TRANSACTION;
+INSERT INTO upload_logs (id, file_name, row_count, error_count, status) VALUES (...);
+INSERT INTO pricing_records (id, store_id, sku, product_name, price, record_date, upload_id) VALUES (...) x N rows;
+COMMIT;
+```
+
 ### AWS Amplify Deployment
 
 The frontend is hosted on AWS Amplify as a static SPA.  
@@ -394,3 +478,4 @@ For the API to work in production, set the `VITE_API_URL` environment variable i
 ```
 VITE_API_URL=https://your-api.example.com/api/pricing
 ```
+

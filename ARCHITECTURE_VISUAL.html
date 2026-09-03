@@ -896,6 +896,96 @@
       color: var(--gray-700)
     }
 
+    /* SAMPLE QUERIES */
+    .query-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .query-card {
+      background: #ffffff;
+      border: 1px solid var(--gray-200);
+      border-radius: 0.75rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .query-card-header {
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .query-card-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .query-card-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background: var(--blue-l);
+      color: var(--blue-d);
+    }
+
+    .query-block {
+      padding: 0.85rem 1rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.73rem;
+      line-height: 1.5;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .query-block pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .query-explain {
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      color: var(--gray-700);
+      background: #fafafa;
+      line-height: 1.45;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .query-explain-item {
+      display: flex;
+      gap: 0.4rem;
+      align-items: flex-start;
+    }
+
+    .query-explain-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.25rem;
+      background: var(--purple-l);
+      color: var(--purple-d);
+      flex-shrink: 0;
+    }
+
     .site-footer {
       text-align: center;
       padding: 2rem;
@@ -927,6 +1017,7 @@
     <a href="#upload">&#9314; Upload Flow</a>
     <a href="#search">&#9315; Search &amp; Edit Flow</a>
     <a href="#api">&#9316; API Reference</a>
+    <a href="#queries">&#9317; Sample Queries</a>
   </nav>
 
   <div class="page">
@@ -1711,6 +1802,157 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- ⑥ SAMPLE QUERIES -->
+    <section class="section" id="queries">
+      <div class="section-header" style="background:linear-gradient(135deg,#312e81,#4338ca);">
+        <div class="section-num" style="background:var(--purple);">6</div>
+        <div>
+          <h2 style="color:#fff;">Sample Queries &amp; API Invocations</h2>
+          <p style="color:rgba(255,255,255,0.7);">Real-world cURL requests, parameter bindings, and underlying SQLite queries</p>
+        </div>
+      </div>
+      <div class="section-body" style="padding-top:1.5rem;">
+        <div class="query-grid">
+
+          <!-- Card 1: Store & SKU lookup -->
+          <div class="query-card">
+            <div class="query-card-header">
+              <div class="query-card-title">&#128269; Specific Store &amp; SKU Lookup</div>
+              <div class="query-card-badge">Exact / Partial Match</div>
+            </div>
+            <div class="query-block">
+              <pre># cURL request
+curl -s "http://localhost:4000/api/pricing?storeId=STORE-001&sku=ABC-001"</pre>
+            </div>
+            <div class="query-explain">
+              <div class="query-explain-item">
+                <span class="query-explain-tag">SQL Executed</span>
+                <code>SELECT * FROM pricing_records WHERE store_id LIKE @storeId AND sku LIKE @sku ORDER BY created_at desc LIMIT 50 OFFSET 0</code>
+              </div>
+              <div class="query-explain-item">
+                <span class="query-explain-tag">Index Hit</span>
+                <span>Utilizes covering index <strong>idx_pricing_store_sku (store_id, sku)</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Product Name & Price Range -->
+          <div class="query-card">
+            <div class="query-card-header">
+              <div class="query-card-title">&#128176; Fuzzy Name &amp; Price Range Filter</div>
+              <div class="query-card-badge">Case-Insensitive</div>
+            </div>
+            <div class="query-block">
+              <pre># cURL request
+curl -s "http://localhost:4000/api/pricing?productName=widget&minPrice=5.00&maxPrice=50.00"</pre>
+            </div>
+            <div class="query-explain">
+              <div class="query-explain-item">
+                <span class="query-explain-tag">SQL Executed</span>
+                <code>SELECT * FROM pricing_records WHERE product_name LIKE @productName COLLATE NOCASE AND price &gt;= @minPrice AND price &lt;= @maxPrice ORDER BY created_at desc LIMIT 50 OFFSET 0</code>
+              </div>
+              <div class="query-explain-item">
+                <span class="query-explain-tag">Index Hit</span>
+                <span>Utilizes collation index <strong>idx_pricing_name (product_name COLLATE NOCASE)</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Date Range & Sorting Pagination -->
+          <div class="query-card">
+            <div class="query-card-header">
+              <div class="query-card-title">&#128197; Date Range &amp; Sorted Pagination</div>
+              <div class="query-card-badge">Page 2 of 20</div>
+            </div>
+            <div class="query-block">
+              <pre># cURL request
+curl -s "http://localhost:4000/api/pricing?dateFrom=2024-01-01&dateTo=2024-01-31&sortBy=price&sortDir=desc&page=2&pageSize=20"</pre>
+            </div>
+            <div class="query-explain">
+              <div class="query-explain-item">
+                <span class="query-explain-tag">SQL Executed</span>
+                <code>SELECT * FROM pricing_records WHERE record_date &gt;= @dateFrom AND record_date &lt;= @dateTo ORDER BY price desc LIMIT 20 OFFSET 20</code>
+              </div>
+              <div class="query-explain-item">
+                <span class="query-explain-tag">Index Hit</span>
+                <span>Utilizes index <strong>idx_pricing_date (record_date)</strong> with allowlist-guarded sort</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Audit Logs -->
+          <div class="query-card">
+            <div class="query-card-header">
+              <div class="query-card-title">&#128220; Upload Audit History Log</div>
+              <div class="query-card-badge">Audit Trail</div>
+            </div>
+            <div class="query-block">
+              <pre># cURL request
+curl -s "http://localhost:4000/api/pricing/upload-logs?page=1&pageSize=10"</pre>
+            </div>
+            <div class="query-explain">
+              <div class="query-explain-item">
+                <span class="query-explain-tag">SQL Executed</span>
+                <code>SELECT COUNT(*) as count FROM upload_logs;<br/>SELECT * FROM upload_logs ORDER BY created_at DESC LIMIT 10 OFFSET 0</code>
+              </div>
+              <div class="query-explain-item">
+                <span class="query-explain-tag">Cache Integration</span>
+                <span>TanStack Query cache key: <code>['upload-logs']</code> (auto-invalidated on upload)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5: Inline Record Update -->
+          <div class="query-card">
+            <div class="query-card-header">
+              <div class="query-card-title">&#9999;&#65039; Partial Inline Update (PUT)</div>
+              <div class="query-card-badge">Optimistic UI</div>
+            </div>
+            <div class="query-block">
+              <pre># cURL request
+curl -X PUT "http://localhost:4000/api/pricing/01923a-bc4d" \
+  -H "Content-Type: application/json" \
+  -d '{"price": 14.99, "product_name": "Pro Widget Deluxe"}'</pre>
+            </div>
+            <div class="query-explain">
+              <div class="query-explain-item">
+                <span class="query-explain-tag">SQL Executed</span>
+                <code>UPDATE pricing_records SET product_name = COALESCE(@product_name, product_name), price = COALESCE(@price, price), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = @id</code>
+              </div>
+              <div class="query-explain-item">
+                <span class="query-explain-tag">Safety</span>
+                <span>Guarded by express-validator schema; fields not provided remain unchanged</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 6: Multipart CSV Upload -->
+          <div class="query-card">
+            <div class="query-card-header">
+              <div class="query-card-title">&#11014;&#65039; Bulk CSV Feed Upload</div>
+              <div class="query-card-badge">All-or-Nothing</div>
+            </div>
+            <div class="query-block">
+              <pre># cURL request
+curl -X POST "http://localhost:4000/api/pricing/upload" \
+  -F "file=@sample_feed.csv"</pre>
+            </div>
+            <div class="query-explain">
+              <div class="query-explain-item">
+                <span class="query-explain-tag">SQL Executed</span>
+                <code>BEGIN TRANSACTION;<br/>INSERT INTO upload_logs (...) VALUES (...);<br/>INSERT INTO pricing_records (...) VALUES (...) x N rows;<br/>COMMIT;</code>
+              </div>
+              <div class="query-explain-item">
+                <span class="query-explain-tag">Integrity</span>
+                <span>Atomic bulk ingestion &mdash; rolls back completely if any single row fails validation</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </section>
 
