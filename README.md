@@ -3,8 +3,9 @@
 This repository contains a full-stack web application for managing retail pricing feeds. It allows store managers to upload CSV pricing feeds, search, and edit records inline.
 
 ## Tech Stack
-- **Frontend (Client):** React 18, Vite, TypeScript, TailwindCSS
+- **Frontend (Client):** React 18, Vite, TypeScript, TailwindCSS, Axios, TanStack Query
 - **Backend (Server):** Node.js, Express, SQLite3 (better-sqlite3)
+- **Deployment:** AWS Amplify (Frontend Hosting)
 
 ## Prerequisites
 - **Node.js**: v18 or newer

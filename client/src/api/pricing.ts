@@ -1,97 +1,86 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // api/pricing.ts
-// All HTTP calls to the backend live here.
-// Components never use fetch() directly — they call these functions instead.
+// Centralized Axios API client for all backend communication.
+//
+// Benefits of Axios:
+//   • Built-in request/response interceptors for clean error standardization
+//   • Native upload progress tracking via onUploadProgress (no XHR boilerplate)
+//   • Automatic JSON serialization and param encoding
 //
 // BASE URL:
 //   • Local dev  → proxied by Vite to http://localhost:4000 (see vite.config.ts)
 //   • Production → set VITE_API_URL env var in Amplify console
 // ─────────────────────────────────────────────────────────────────────────────
 
+import axios from 'axios';
 import type {
   PricingListResponse,
   UploadLogsResponse,
   UploadSuccessResponse,
   ValidationErrorResponse,
   SearchFilters,
+  PricingRecord,
 } from '../types/pricing';
 
 const BASE = import.meta.env.VITE_API_URL || '/api/pricing';
 
-// ── Shared helper ─────────────────────────────────────────────────────────────
-// Throws a structured error for any non-2xx response so callers can rely on
-// try/catch instead of checking res.ok manually.
-async function handleResponse<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const err: ValidationErrorResponse = await res.json().catch(() => ({
-      error: 'NetworkError',
-      message: res.statusText,
-    }));
-    throw Object.assign(new Error(err.message), { details: err });
+// Shared Axios client instance
+const api = axios.create({
+  baseURL: BASE,
+});
+
+// Response interceptor: unwraps data directly and preserves structured validation errors
+api.interceptors.response.use(
+  (res) => res.data,
+  (error) => {
+    const data = error.response?.data as ValidationErrorResponse | undefined;
+    const message = data?.message || error.message || 'Request failed';
+    const err = Object.assign(new Error(message), {
+      details: data || { error: 'NetworkError', message },
+    });
+    return Promise.reject(err);
   }
-  return res.json() as Promise<T>;
-}
+);
 
 // ── Upload CSV ────────────────────────────────────────────────────────────────
-// Uses XHR (instead of fetch) so we can track real upload progress.
-// onProgress receives a 0-100 percentage value.
-export function uploadCsv(file: File, onProgress?: (pct: number) => void): Promise<UploadSuccessResponse> {
-  return new Promise((resolve, reject) => {
-    const form = new FormData();
-    form.append('file', file);
+// Uses Axios native onUploadProgress to monitor upload percentage cleanly
+export function uploadCsv(
+  file: File,
+  onProgress?: (pct: number) => void
+): Promise<UploadSuccessResponse> {
+  const form = new FormData();
+  form.append('file', file);
 
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${BASE}/upload`);
-
-    // Fire onProgress as bytes are sent
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100));
-    };
-
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(JSON.parse(xhr.responseText));
-      } else {
-        try {
-          const err: ValidationErrorResponse = JSON.parse(xhr.responseText);
-          reject(Object.assign(new Error(err.message), { details: err }));
-        } catch {
-          reject(new Error(`Upload failed: ${xhr.statusText}`));
-        }
+  return api.post('/upload', form, {
+    onUploadProgress: (e) => {
+      if (e.total && onProgress) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
       }
-    };
-
-    xhr.onerror = () => reject(new Error('Network error during upload'));
-    xhr.send(form);
+    },
   });
 }
 
 // ── Search pricing records ────────────────────────────────────────────────────
-// Converts the SearchFilters object to query-string params and fetches results.
+// Passes query params to Axios; empty filters are omitted
 export function searchPricing(filters: SearchFilters): Promise<PricingListResponse> {
-  const params = new URLSearchParams();
-  // Only include non-empty filter values in the request
+  const params: Record<string, unknown> = {};
   Object.entries(filters).forEach(([k, v]) => {
-    if (v !== undefined && v !== '') params.set(k, String(v));
+    if (v !== undefined && v !== '') params[k] = v;
   });
-  return fetch(`${BASE}?${params}`).then(handleResponse<PricingListResponse>);
+
+  return api.get('', { params });
 }
 
 // ── Update a single pricing record ────────────────────────────────────────────
-// Sends only the changed fields; the server merges them with the existing row.
+// Sends partial updates; server updates provided fields and refreshes updated_at
 export function updatePricingRecord(
   id: string,
-  data: Partial<Pick<import('../types/pricing').PricingRecord, 'store_id' | 'sku' | 'product_name' | 'price' | 'record_date'>>
-) {
-  return fetch(`${BASE}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  }).then(handleResponse<{ message: string; data: unknown }>);
+  data: Partial<Pick<PricingRecord, 'store_id' | 'sku' | 'product_name' | 'price' | 'record_date'>>
+): Promise<{ message: string; data: unknown }> {
+  return api.put(`/${id}`, data);
 }
 
 // ── Fetch upload history logs ─────────────────────────────────────────────────
 export function getUploadLogs(page = 1, pageSize = 20): Promise<UploadLogsResponse> {
-  return fetch(`${BASE}/upload-logs?page=${page}&pageSize=${pageSize}`)
-    .then(handleResponse<UploadLogsResponse>);
+  return api.get('/upload-logs', { params: { page, pageSize } });
 }

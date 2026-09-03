@@ -1,7 +1,7 @@
 # Architecture Deliverables
 ## Retail Pricing Feed Management System
 
-> **Stack:** React 18 + Vite + TypeScript + TailwindCSS (client) · TanStack Query (server-state cache) · Node.js + Express (server) · SQLite3/better-sqlite3 (database) · AWS Amplify (hosting)
+> **Stack:** React 18 + Vite + TypeScript + TailwindCSS + Axios (client) · TanStack Query (server-state cache) · Node.js + Express (server) · SQLite3/better-sqlite3 (database) · AWS Amplify (hosting)
 
 ---
 
@@ -59,7 +59,7 @@ graph TD
         FB["FilterBar"]:::comp
         PT["PricingTable\nCell component"]:::comp
         PG["Pagination"]:::comp
-        AC["api/pricing.ts\nuploadCsv (XHR) · searchPricing\nupdatePricingRecord · getUploadLogs"]:::api
+        AC["api/pricing.ts (Axios)\nuploadCsv (onUploadProgress) · searchPricing\nupdatePricingRecord · getUploadLogs"]:::api
         TY["types/pricing.ts\nPricingRecord · UploadLog\nSearchFilters · response types"]:::api
     end
 
@@ -106,7 +106,7 @@ sequenceDiagram
     actor U as Admin
     participant UI as UploadPage (useMutation)
     participant QC as QueryClient cache
-    participant XHR as XHR progress events
+    participant AX as Axios onUploadProgress
     participant MW as Express middleware
     participant PP as PapaParse
     participant V  as validateCsvRow
@@ -117,10 +117,10 @@ sequenceDiagram
     U  ->> UI  : Clicks Upload button
 
     UI ->> QC  : onMutate() — set status='uploading'
-    UI ->> XHR : POST /api/pricing/upload (multipart)
-    XHR -->> UI: progress events → progress bar %
+    UI ->> AX  : POST /api/pricing/upload (multipart FormData)
+    AX -->> UI : onUploadProgress(pct) → progress bar %
 
-    XHR ->> MW : Request hits Express
+    AX ->> MW  : Request hits Express
     MW  ->> MW : helmet, cors, morgan pass through
     MW  ->> MW : multer — check MIME type and file size
 
@@ -236,7 +236,7 @@ sequenceDiagram
 | D3 | In-memory CSV parsing | multer memoryStorage + PapaParse from Buffer. No temp files. Header normalisation (trim → lowercase → underscores) makes format forgiving. |
 | D4 | SQLite transaction for bulk insert | upload_log + all pricing_records in one transaction. Any failure rolls back everything. Audit log never out of sync. |
 | D5 | Allowlist for ORDER BY | sortBy and sortDir checked against hardcoded arrays before SQL interpolation. Prevents ORDER BY injection. |
-| D6 | XHR instead of fetch for uploads | XMLHttpRequest.upload exposes progress events for accurate % progress bar. fetch API does not support upload progress. |
+| D6 | Axios HTTP client with onUploadProgress | Axios provides clean instance configuration, interceptors for standard error wrapping, automatic param/body serialization, and native `onUploadProgress` callbacks without raw XMLHttpRequest boilerplate. |
 | D7 | Vite /api proxy | Proxies /api to port 4000 in dev. Eliminates dev CORS issues. Production uses VITE_API_URL env var. |
 | D8 | Covering indexes on pricing_records | Indexes on store_id, sku, record_date, (store_id, sku), product_name match the most common filter patterns. |
 | D9 | COALESCE partial UPDATE | PUT endpoint only needs changed fields. Inline editor sends only modified fields. |
@@ -347,7 +347,7 @@ tigeraAlytics/
         ├── vite-env.d.ts        Adds import.meta.env types for TypeScript
         ├── App.tsx              BrowserRouter + nav + Routes (/, /search, /architecture)
         ├── types/pricing.ts     PricingRecord, UploadLog, SearchFilters, API response types
-        ├── api/pricing.ts       uploadCsv (XHR), searchPricing, updatePricingRecord, getUploadLogs
+        ├── api/pricing.ts       Axios client (uploadCsv with onUploadProgress, searchPricing, updatePricingRecord, getUploadLogs)
         ├── pages/
         │   ├── UploadPage.tsx   useQuery (logs) + useMutation (upload) + file state
         │   ├── SearchPage.tsx   useQuery (search) + optimistic cache patch on edit

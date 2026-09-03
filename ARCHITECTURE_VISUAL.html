@@ -1004,6 +1004,7 @@
       <span>&#9883;&#65039; React 18</span>
       <span>&#9889; Vite + TypeScript</span>
       <span>&#127912; TailwindCSS</span>
+      <span>&#128225; Axios</span>
       <span>&#128204; TanStack Query</span>
       <span>&#129001; Node.js + Express</span>
       <span>&#128196; SQLite3 / WAL</span>
@@ -1198,7 +1199,7 @@
                 <div class="c-icon">&#128241;</div>
                 <div class="c-title">api/pricing.ts</div>
                 <div class="c-file">src/api/pricing.ts</div>
-                <div class="c-desc">uploadCsv() via XHR (progress events) &middot; searchPricing() &middot;
+                <div class="c-desc">Axios client &middot; uploadCsv() via onUploadProgress &middot; searchPricing() &middot;
                   updatePricingRecord() &middot; getUploadLogs()</div>
               </div>
               <div class="comp-card">
@@ -1397,20 +1398,20 @@
             </div>
 
             <div class="step-group sg-orange">
-              <div class="sg-header">&#128225; Phase 2 &mdash; Network Transfer (XHR with progress)</div>
+              <div class="sg-header">&#128225; Phase 2 &mdash; Network Transfer (Axios onUploadProgress)</div>
               <div class="step">
                 <div class="step-num">4</div>
                 <div class="step-content">
-                  <div class="step-arrow">UploadPage &#8594; XHR</div>
-                  <div class="step-desc">Opens XHR POST with file wrapped in FormData (multipart/form-data)</div>
+                  <div class="step-arrow">UploadPage &#8594; Axios</div>
+                  <div class="step-desc">Dispatches Axios POST with file wrapped in FormData (multipart/form-data)</div>
                   <div class="step-code">POST /api/pricing/upload</div>
                 </div>
               </div>
               <div class="step">
                 <div class="step-num">5</div>
                 <div class="step-content">
-                  <div class="step-arrow">XHR &#8594; UploadPage (continuous)</div>
-                  <div class="step-desc">upload.progress events fire as bytes are sent &#8594; progress bar % updates in
+                  <div class="step-arrow">Axios onUploadProgress &#8594; UploadPage (continuous)</div>
+                  <div class="step-desc">onUploadProgress events fire as bytes are sent &#8594; progress bar % updates in
                     real time</div>
                 </div>
               </div>
