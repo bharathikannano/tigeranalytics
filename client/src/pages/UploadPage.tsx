@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import UploadDropzone from '../components/UploadDropzone';
 import { uploadCsv, getUploadLogs } from '../api/pricing';
 import type { UploadLog } from '../types/pricing';
+import { useState } from 'react';
 
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';
 
 export default function UploadPage() {
+  const queryClient = useQueryClient();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [progress, setProgress]         = useState(0);
   const [status, setStatus]             = useState<UploadStatus>('idle');
@@ -13,47 +15,31 @@ export default function UploadPage() {
   const [errors, setErrors]             = useState<string[]>([]);
   const [errorMsg, setErrorMsg]         = useState('');
 
-  const [logs, setLogs]             = useState<UploadLog[]>([]);
-  const [logsLoading, setLogsLoading] = useState(false);
+  // ── Fetch upload logs via TanStack Query ─────────────────────────────────
+  const { data: logsData, isLoading: logsLoading } = useQuery({
+    queryKey: ['upload-logs'],
+    queryFn: () => getUploadLogs(),
+  });
+  const logs: UploadLog[] = logsData?.data ?? [];
 
-  useEffect(() => { loadLogs(); }, []);
-
-  async function loadLogs() {
-    setLogsLoading(true);
-    try {
-      const res = await getUploadLogs();
-      setLogs(res.data);
-    } catch {
-      // non-critical
-    } finally {
-      setLogsLoading(false);
-    }
-  }
-
-  function handleFile(file: File) {
-    setSelectedFile(file);
-    setStatus('idle');
-    setResult(null);
-    setErrors([]);
-    setErrorMsg('');
-    setProgress(0);
-  }
-
-  async function handleUpload() {
-    if (!selectedFile) return;
-    setStatus('uploading');
-    setProgress(0);
-    setResult(null);
-    setErrors([]);
-    setErrorMsg('');
-
-    try {
-      const res = await uploadCsv(selectedFile, setProgress);
+  // ── Upload mutation ───────────────────────────────────────────────────────
+  const uploadMutation = useMutation({
+    mutationFn: (file: File) => uploadCsv(file, setProgress),
+    onMutate: () => {
+      setStatus('uploading');
+      setProgress(0);
+      setResult(null);
+      setErrors([]);
+      setErrorMsg('');
+    },
+    onSuccess: (res) => {
       setResult({ rowsInserted: res.rowsInserted, fileName: res.fileName });
       setStatus('success');
       setSelectedFile(null);
-      await loadLogs();
-    } catch (err) {
+      // Invalidate logs cache so the history table auto-refreshes
+      queryClient.invalidateQueries({ queryKey: ['upload-logs'] });
+    },
+    onError: (err) => {
       setStatus('error');
       if (err && typeof err === 'object' && 'details' in err) {
         const d = (err as { details: { message: string; errors?: string[] } }).details;
@@ -62,7 +48,16 @@ export default function UploadPage() {
       } else {
         setErrorMsg(err instanceof Error ? err.message : 'Upload failed');
       }
-    }
+    },
+  });
+
+  function handleFile(file: File) {
+    setSelectedFile(file);
+    setStatus('idle');
+    setResult(null);
+    setErrors([]);
+    setErrorMsg('');
+    setProgress(0);
   }
 
   function reset() {
@@ -168,7 +163,7 @@ export default function UploadPage() {
         <div className="flex gap-3">
           <button
             className="btn-primary"
-            onClick={handleUpload}
+            onClick={() => selectedFile && uploadMutation.mutate(selectedFile)}
             disabled={!selectedFile || status === 'uploading'}
           >
             {status === 'uploading' ? 'Uploading…' : '⬆ Upload'}

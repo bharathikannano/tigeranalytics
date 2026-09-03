@@ -24,7 +24,14 @@ const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      if (
+        !origin || 
+        allowedOrigins.includes(origin) || 
+        allowedOrigins.includes('*') ||
+        (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:'))
+      ) {
+        return cb(null, true);
+      }
       cb(new Error(`CORS policy: origin ${origin} not allowed`));
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

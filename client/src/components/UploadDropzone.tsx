@@ -9,8 +9,8 @@ const ACCEPTED = '.csv,text/csv,application/vnd.ms-excel';
 
 export default function UploadDropzone({ onFile, disabled }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
-  const [fileError, setFileError] = useState('');
+  const [ dragging, setDragging ] = useState(false);
+  const [ fileError, setFileError ] = useState('');
 
   function handleFile(file: File | undefined) {
     if (!file) return;
@@ -25,7 +25,7 @@ export default function UploadDropzone({ onFile, disabled }: Props) {
   function onDrop(e: React.DragEvent) {
     e.preventDefault();
     setDragging(false);
-    handleFile(e.dataTransfer.files[0]);
+    handleFile(e.dataTransfer.files[ 0 ]);
   }
 
   return (
@@ -44,7 +44,7 @@ export default function UploadDropzone({ onFile, disabled }: Props) {
         accept={ACCEPTED}
         className="sr-only"
         disabled={disabled}
-        onChange={(e) => handleFile(e.target.files?.[0])}
+        onChange={(e) => handleFile(e.target.files?.[ 0 ])}
       />
       <div className="text-4xl mb-3 select-none">📂</div>
       <p className="text-sm font-semibold text-gray-700">
