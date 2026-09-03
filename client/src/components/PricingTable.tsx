@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // components/PricingTable.tsx
-// Displays pricing records in a table with inline row editing.
+// Table of pricing records with inline row-level editing.
 //
-// Editing flow per row:
-//   1. Click ✏ Edit  → row switches to input fields (editingId set)
-//   2. Click ✓ Save  → PUT /api/pricing/:id → parent notified via onRecordUpdated
-//   3. Click ✕ Cancel → discard changes, return to read-only view
+// Editing flow:
+//   Click ✏ Edit  → row turns into input fields (editingId set to r.id)
+//   Click ✓ Save  → PUT /api/pricing/:id → parent's onRecordUpdated() called
+//   Click ✕ Cancel → discard edits, back to read-only
 //
-// Only one row can be edited at a time (editingId tracks which one).
+// Only one row can be open at a time (editingId guards the Edit button).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState } from 'react';
@@ -16,41 +16,44 @@ import type { PricingRecord } from '../types/pricing';
 
 interface Props {
   records:         PricingRecord[];
-  onRecordUpdated: (updated: PricingRecord) => void;  // notify parent after save
+  onRecordUpdated: (updated: PricingRecord) => void;
 }
 
-// The subset of fields the user can edit inline
 type EditState = Partial<Pick<PricingRecord, 'store_id' | 'sku' | 'product_name' | 'price' | 'record_date'>>;
 
-// Shared CSS class strings to keep JSX compact
+// Shared CSS strings to keep table cells tidy
 const TD = 'px-3 py-2.5 text-sm';
 const TH = 'px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide';
 
+// Reusable text input cell — shows a read value or an editable input
+function Cell({ editing, display, input }: { editing: boolean; display: React.ReactNode; input: React.ReactNode }) {
+  return <>{editing ? input : display}</>;
+}
+
 export default function PricingTable({ records, onRecordUpdated }: Props) {
-  const [editingId, setEditingId] = useState<string | null>(null);  // ID of the row being edited
-  const [editState, setEditState] = useState<EditState>({});         // current field values
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editState, setEditState] = useState<EditState>({});
   const [saving,    setSaving]    = useState(false);
   const [saveError, setSaveError] = useState('');
 
-  // Enter edit mode for a row — copy its current values into editState
+  const set = <K extends keyof EditState>(k: K, v: EditState[K]) =>
+    setEditState((p) => ({ ...p, [k]: v }));
+
   function startEdit(r: PricingRecord) {
     setEditingId(r.id);
     setEditState({ store_id: r.store_id, sku: r.sku, product_name: r.product_name, price: r.price, record_date: r.record_date });
     setSaveError('');
   }
 
-  // Discard edits and go back to read-only
   function cancelEdit() { setEditingId(null); setEditState({}); setSaveError(''); }
 
-  // Persist the edited row to the server
   async function saveEdit(id: string) {
     setSaving(true);
     setSaveError('');
     try {
-      const result = await updatePricingRecord(id, editState);
-      onRecordUpdated(result.data as PricingRecord);
-      setEditingId(null);
-      setEditState({});
+      const res = await updatePricingRecord(id, editState);
+      onRecordUpdated(res.data as PricingRecord);
+      cancelEdit();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Save failed');
     } finally {
@@ -58,32 +61,19 @@ export default function PricingTable({ records, onRecordUpdated }: Props) {
     }
   }
 
-  // Update a single field in editState
-  const setField = <K extends keyof EditState>(key: K, value: EditState[K]) =>
-    setEditState((prev) => ({ ...prev, [key]: value }));
-
-  if (records.length === 0) {
-    return (
-      <div className="text-center py-16 text-gray-400">
-        <p className="text-4xl mb-3">📭</p>
-        <p className="text-sm">No records found. Try adjusting your filters.</p>
-      </div>
-    );
-  }
+  if (!records.length) return (
+    <div className="text-center py-16 text-gray-400">
+      <p className="text-4xl mb-3">📭</p>
+      <p className="text-sm">No records found. Try adjusting your filters.</p>
+    </div>
+  );
 
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-      {/* Inline save error — shown above the table so it's always visible */}
-      {saveError && (
-        <div className="bg-red-50 border-b border-red-200 px-4 py-2 text-sm text-red-700">⚠ {saveError}</div>
-      )}
-
+      {saveError && <div className="bg-red-50 border-b border-red-200 px-4 py-2 text-sm text-red-700">⚠ {saveError}</div>}
       <table className="w-full text-left text-sm">
         <thead className="bg-gray-50 border-b border-gray-200">
-          <tr>
-            {['Store ID', 'SKU', 'Product Name', 'Price', 'Date', 'Last Updated', 'Actions']
-              .map((h) => <th key={h} className={TH}>{h}</th>)}
-          </tr>
+          <tr>{['Store ID','SKU','Product Name','Price','Date','Last Updated','Actions'].map((h) => <th key={h} className={TH}>{h}</th>)}</tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {records.map((r) => {
@@ -91,48 +81,35 @@ export default function PricingTable({ records, onRecordUpdated }: Props) {
             return (
               <tr key={r.id} className={`transition-colors ${isEditing ? 'bg-brand-50' : 'hover:bg-gray-50'}`}>
 
-                {/* Store ID */}
-                <td className={TD}>
-                  {isEditing
-                    ? <input className="input w-28" value={editState.store_id ?? ''} onChange={(e) => setField('store_id', e.target.value)} />
-                    : <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{r.store_id}</span>}
-                </td>
+                <td className={TD}><Cell editing={isEditing}
+                  display={<span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{r.store_id}</span>}
+                  input={<input className="input w-28" value={editState.store_id ?? ''} onChange={(e) => set('store_id', e.target.value)} />}
+                /></td>
 
-                {/* SKU */}
-                <td className={TD}>
-                  {isEditing
-                    ? <input className="input w-28" value={editState.sku ?? ''} onChange={(e) => setField('sku', e.target.value)} />
-                    : <span className="font-mono text-xs">{r.sku}</span>}
-                </td>
+                <td className={TD}><Cell editing={isEditing}
+                  display={<span className="font-mono text-xs">{r.sku}</span>}
+                  input={<input className="input w-28" value={editState.sku ?? ''} onChange={(e) => set('sku', e.target.value)} />}
+                /></td>
 
-                {/* Product Name */}
-                <td className={`${TD} max-w-xs`}>
-                  {isEditing
-                    ? <input className="input w-full" value={editState.product_name ?? ''} onChange={(e) => setField('product_name', e.target.value)} />
-                    : <span className="truncate block" title={r.product_name}>{r.product_name}</span>}
-                </td>
+                <td className={`${TD} max-w-xs`}><Cell editing={isEditing}
+                  display={<span className="truncate block" title={r.product_name}>{r.product_name}</span>}
+                  input={<input className="input w-full" value={editState.product_name ?? ''} onChange={(e) => set('product_name', e.target.value)} />}
+                /></td>
 
-                {/* Price */}
-                <td className={TD}>
-                  {isEditing
-                    ? <input type="number" step="0.01" min="0" className="input w-24" value={editState.price ?? ''}
-                        onChange={(e) => setField('price', parseFloat(e.target.value))} />
-                    : <span className="font-semibold text-gray-800">
-                        {r.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>}
-                </td>
+                <td className={TD}><Cell editing={isEditing}
+                  display={<span className="font-semibold">{r.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+                  input={<input type="number" step="0.01" min="0" className="input w-24" value={editState.price ?? ''} onChange={(e) => set('price', parseFloat(e.target.value))} />}
+                /></td>
 
-                {/* Record Date */}
-                <td className={TD}>
-                  {isEditing
-                    ? <input type="date" className="input w-36" value={editState.record_date ?? ''} onChange={(e) => setField('record_date', e.target.value)} />
-                    : <span>{r.record_date}</span>}
-                </td>
+                <td className={TD}><Cell editing={isEditing}
+                  display={<span>{r.record_date}</span>}
+                  input={<input type="date" className="input w-36" value={editState.record_date ?? ''} onChange={(e) => set('record_date', e.target.value)} />}
+                /></td>
 
-                {/* Last Updated (read-only) */}
+                {/* Last updated is always read-only */}
                 <td className={`${TD} text-gray-400 text-xs`}>{new Date(r.updated_at).toLocaleString()}</td>
 
-                {/* Edit / Save / Cancel buttons */}
+                {/* Action buttons swap between Edit mode and Save/Cancel */}
                 <td className={`${TD} whitespace-nowrap`}>
                   {isEditing ? (
                     <div className="flex gap-2">
@@ -140,7 +117,6 @@ export default function PricingTable({ records, onRecordUpdated }: Props) {
                       <button className="btn-secondary text-xs px-3 py-1.5" onClick={cancelEdit}           disabled={saving}>✕ Cancel</button>
                     </div>
                   ) : (
-                    // Disable Edit on all rows when another row is already being edited
                     <button className="btn-secondary text-xs px-3 py-1.5" onClick={() => startEdit(r)} disabled={editingId !== null}>✏ Edit</button>
                   )}
                 </td>

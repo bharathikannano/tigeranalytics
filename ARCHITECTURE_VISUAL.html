@@ -914,8 +914,10 @@
       <span>&#9883;&#65039; React 18</span>
       <span>&#9889; Vite + TypeScript</span>
       <span>&#127912; TailwindCSS</span>
+      <span>&#128204; TanStack Query</span>
       <span>&#129001; Node.js + Express</span>
       <span>&#128196; SQLite3 / WAL</span>
+      <span>&#9729;&#65039; AWS Amplify</span>
     </div>
   </header>
 
@@ -1037,21 +1039,19 @@
                 <div class="c-icon">&#128506;</div>
                 <div class="c-title">App.tsx</div>
                 <div class="c-file">src/App.tsx</div>
-                <div class="c-desc">Root component. BrowserRouter, top nav bar, route declarations for Upload &amp;
-                  Search pages.</div>
+                <div class="c-desc">Root component. BrowserRouter, top nav bar, route declarations for /, /search, /architecture.</div>
               </div>
               <div class="comp-card">
                 <div class="c-icon">&#11014;&#65039;</div>
                 <div class="c-title">UploadPage</div>
                 <div class="c-file">src/pages/UploadPage.tsx</div>
-                <div class="c-desc">Manages file selection, XHR progress state, success/error banners, and upload
-                  history table.</div>
+                <div class="c-desc">useMutation for upload (progress, success, error). useQuery for upload history. invalidateQueries triggers auto-refresh after a successful upload.</div>
               </div>
               <div class="comp-card">
                 <div class="c-icon">&#128269;</div>
                 <div class="c-title">SearchPage</div>
                 <div class="c-file">src/pages/SearchPage.tsx</div>
-                <div class="c-desc">Orchestrates filter state, loading skeleton, paginated results, and edit callbacks.
+                <div class="c-desc">useQuery(['pricing', activeFilters]) — re-fetches on filter change. filters vs activeFilters split prevents per-keystroke requests. Optimistic cache patch via setQueryData on inline edit.
                 </div>
               </div>
             </div>
@@ -1083,8 +1083,7 @@
                 <div class="c-icon">&#128202;</div>
                 <div class="c-title">PricingTable</div>
                 <div class="c-file">src/components/PricingTable.tsx</div>
-                <div class="c-desc">Data grid with per-row toggle between read view and inline edit mode. Save/Cancel
-                  actions.</div>
+                <div class="c-desc">Data grid with reusable Cell component for read/edit toggle. Per-row Save/Cancel actions. Only one row editable at a time.</div>
               </div>
               <div class="comp-card">
                 <div class="c-icon">&#128196;</div>
@@ -1123,7 +1122,7 @@
 
           <div class="layer-conn">
             <div class="conn-line"></div>
-            <div class="conn-label">&#11015; HTTP through Vite /api proxy &#8594; port 4000</div>
+            <div class="conn-label">&#11015; HTTP through Vite /api proxy (dev) or VITE_API_URL env var (prod) &#8594; port 4000</div>
             <div class="conn-line"></div>
           </div>
 
@@ -1135,8 +1134,7 @@
                 <div class="c-icon">&#9881;&#65039;</div>
                 <div class="c-title">app.js</div>
                 <div class="c-file">server/src/app.js</div>
-                <div class="c-desc">helmet &#8594; cors &#8594; morgan &#8594; rate-limit (200/min) &#8594; body-parser
-                  &#8594; routes</div>
+                <div class="c-desc">helmet &#8594; cors (dynamic localhost in dev) &#8594; morgan &#8594; rate-limit (200/min) &#8594; body-parser &#8594; routes</div>
               </div>
               <div class="comp-card">
                 <div class="c-icon">&#9989;</div>
