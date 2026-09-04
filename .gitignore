@@ -42,3 +42,16 @@ server/data/*.db
 
 # Typescript
 *.tsbuildinfo
+
+# client dependencies
+./client/node_modules/
+
+# server dependencies
+./server/node_modules/
+
+# client build outputs  
+./client/dist/
+
+# server dist
+./server/dist/
+
