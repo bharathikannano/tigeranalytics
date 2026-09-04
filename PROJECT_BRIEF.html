@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retail Pricing Feed Management — Project Brief</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0f1e;--surface:#111827;--surface2:#1a2236;--border:rgba(99,118,164,0.18);
+      --accent:#6366f1;--accent2:#8b5cf6;--cyan:#22d3ee;--green:#10b981;
+      --amber:#f59e0b;--red:#ef4444;--txt:#e2e8f0;--txt-muted:#94a3b8;
+      --radius:14px;--glow:0 0 40px rgba(99,102,241,0.15);
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);line-height:1.65;min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 10%,rgba(99,102,241,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 80% 90%,rgba(139,92,246,0.1) 0%,transparent 60%);pointer-events:none;z-index:0}
+    .wrapper{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 24px 80px}
+    .hero{text-align:center;padding:72px 0 56px;border-bottom:1px solid var(--border);margin-bottom:64px}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:999px;padding:6px 16px;font-size:12px;font-weight:600;color:#a5b4fc;letter-spacing:.08em;text-transform:uppercase;margin-bottom:24px}
+    .hero-tag::before{content:'●';font-size:8px;color:var(--green);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.15;background:linear-gradient(135deg,#fff 0%,#a5b4fc 50%,var(--cyan) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px}
+    .hero-sub{font-size:1.05rem;color:var(--txt-muted);max-width:600px;margin:0 auto 32px}
+    .stack-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+    .pill{background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--txt-muted);transition:all .2s}
+    .pill.hi{border-color:rgba(99,102,241,0.4);color:#a5b4fc;background:rgba(99,102,241,0.08)}
+    .toc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:40px;display:flex;flex-wrap:wrap;gap:8px}
+    .toc-label{width:100%;font-size:11px;font-weight:700;color:var(--txt-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+    .toc a{text-decoration:none;font-size:13px;font-weight:500;color:var(--txt-muted);padding:5px 12px;border-radius:8px;border:1px solid transparent;transition:all .2s}
+    .toc a:hover{background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.3);color:#a5b4fc}
+    section{margin-bottom:72px;scroll-margin-top:40px}
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:32px}
+    .section-num{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;font-size:14px;font-weight:800;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 4px 16px rgba(99,102,241,0.35)}
+    .section-title{font-size:1.5rem;font-weight:700;color:#fff}
+    .section-desc{font-size:.9rem;color:var(--txt-muted);margin-top:2px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:20px;transition:border-color .2s,box-shadow .2s}
+    .card:hover{border-color:rgba(99,102,241,0.3);box-shadow:var(--glow)}
+    .card-title{font-size:1rem;font-weight:700;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    @media(max-width:720px){.grid-2,.grid-3{grid-template-columns:1fr}}
+    .deliverables{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+    .del-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 18px;text-align:center;transition:all .25s;cursor:default}
+    .del-card:hover{border-color:var(--accent);box-shadow:0 0 24px rgba(99,102,241,0.2);transform:translateY(-3px)}
+    .del-icon{font-size:32px;margin-bottom:12px}
+    .del-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:6px}
+    .del-desc{font-size:12px;color:var(--txt-muted);line-height:1.5}
+    .arch-layer{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+    .arch-layer-header{padding:12px 20px;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+    .arch-layer-body{padding:20px;display:flex;flex-wrap:wrap;gap:12px;background:var(--surface)}
+    .arch-chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--txt-muted);display:flex;flex-direction:column;gap:2px}
+    .arch-chip .ch-title{color:var(--txt);font-size:13px}
+    .arch-chip .ch-sub{font-size:11px;color:var(--txt-muted);font-weight:400}
+    .layer-fe .arch-layer-header{background:rgba(59,130,246,0.1);color:#93c5fd}
+    .layer-be .arch-layer-header{background:rgba(16,185,129,0.1);color:#6ee7b7}
+    .layer-db .arch-layer-header{background:rgba(139,92,246,0.1);color:#c4b5fd}
+    .layer-host .arch-layer-header{background:rgba(245,158,11,0.1);color:#fcd34d}
+    .tbl-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:13.5px}
+    thead tr{background:var(--surface2)}
+    th{padding:12px 16px;text-align:left;font-weight:700;color:var(--txt-muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+    td{padding:12px 16px;border-top:1px solid var(--border);vertical-align:top;color:var(--txt)}
+    tr:hover td{background:rgba(99,102,241,0.03)}
+    td:first-child{color:var(--txt-muted);font-family:'JetBrains Mono',monospace;font-size:12px;white-space:nowrap}
+    .badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;vertical-align:middle}
+    .badge-g{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3)}
+    .badge-b{background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3)}
+    .badge-a{background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid rgba(245,158,11,0.3)}
+    pre{background:#080d18;border:1px solid var(--border);border-radius:10px;padding:20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#94a3b8;margin-top:10px}
+    .kw{color:#818cf8}.str{color:#6ee7b7}.cm{color:#475569;font-style:italic}.fn{color:#fcd34d}.ty{color:#f9a8d4}.op{color:#94a3b8}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 18px;transition:transform .2s,box-shadow .2s}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:var(--glow)}
+    .stat-val{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:6px}
+    .stat-label{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:4px}
+    .stat-desc{font-size:12px;color:var(--txt-muted)}
+    .assumption-list{list-style:none;display:flex;flex-direction:column;gap:12px}
+    .assumption-list li{display:flex;align-items:flex-start;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:14px}
+    .assumption-list li .ai{font-size:20px;flex-shrink:0;margin-top:1px}
+    .assumption-list li strong{color:#fff;display:block;margin-bottom:2px;font-size:13px}
+    .method{display:inline-block;padding:2px 10px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700}
+    .m-post{background:rgba(16,185,129,0.15);color:var(--green)}
+    .m-get{background:rgba(99,102,241,0.15);color:#a5b4fc}
+    .m-put{background:rgba(245,158,11,0.15);color:var(--amber)}
+    code{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.15);border-radius:4px;padding:1px 6px;color:#a5b4fc}
+    .ctx-diagram{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;overflow-x:auto}
+    .ctx-node{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:110px;min-height:80px;border-radius:12px;padding:12px 8px;font-size:11px;font-weight:600;text-align:center;line-height:1.3;transition:transform .2s}
+    .ctx-node:hover{transform:translateY(-3px)}
+    .ctx-node .icon{font-size:22px}
+    .ctx-arrow{font-size:18px;color:var(--txt-muted);padding:0 4px}
+    .n-actor{background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#93c5fd}
+    .n-system{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#fcd34d}
+    .n-csv{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7}
+    .n-db{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#c4b5fd}
+    .n-cloud{background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.3);color:#f9a8d4}
+    .footer{border-top:1px solid var(--border);padding-top:32px;text-align:center;color:var(--txt-muted);font-size:13px;margin-top:40px}
+    .footer a{color:#a5b4fc;text-decoration:none;font-weight:600}
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .flow-step{display:flex;align-items:flex-start;gap:12px;padding:10px;background:var(--surface2);border-radius:8px;font-size:13px}
+    .flow-num{color:var(--accent);font-weight:700;min-width:20px;flex-shrink:0}
+    .gh-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;transition:opacity .2s}
+    .gh-btn:hover{opacity:.85}
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Live Project</div>
+    <h1>Retail Pricing Feed<br/>Management System</h1>
+    <p class="hero-sub">A single-page web application for uploading, persisting, searching, and editing CSV pricing feeds across 3,000+ retail stores in multiple countries.</p>
+    <div class="stack-pills">
+      <span class="pill hi">React 18</span><span class="pill hi">TypeScript</span><span class="pill hi">Vite</span>
+      <span class="pill hi">TailwindCSS</span><span class="pill hi">Axios</span><span class="pill hi">TanStack Query</span>
+      <span class="pill">Node.js + Express</span><span class="pill">SQLite3 / better-sqlite3</span><span class="pill">AWS Amplify</span>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <span class="toc-label">Jump to</span>
+    <a href="#brief">Brief</a><a href="#context">Context Diagram</a><a href="#architecture">Architecture</a>
+    <a href="#decisions">Design Decisions</a><a href="#nfr">Non-Functional</a>
+    <a href="#assumptions">Assumptions</a><a href="#source">Source</a>
+  </nav>
+
+  <!-- 0. BRIEF -->
+  <section id="brief" class="reveal">
+    <div class="section-header">
+      <div class="section-num">📋</div>
+      <div><div class="section-title">Project Brief</div><div class="section-desc">What was asked and what was built</div></div>
+    </div>
+    <div class="deliverables">
+      <div class="del-card"><div class="del-icon">📤</div><div class="del-title">CSV Upload</div><div class="del-desc">Upload and persist pricing feeds containing Store ID, SKU, Product Name, Price, and Date.</div></div>
+      <div class="del-card"><div class="del-icon">🔍</div><div class="del-title">Search & Filter</div><div class="del-desc">Search by store, SKU, product name, price range, and date range with sort and pagination.</div></div>
+      <div class="del-card"><div class="del-icon">✏️</div><div class="del-title">Inline Edit</div><div class="del-desc">Edit any pricing record in-place and save changes without a page reload.</div></div>
+      <div class="del-card"><div class="del-icon">🏪</div><div class="del-title">3,000+ Stores</div><div class="del-desc">Designed for a retail chain with thousands of stores across multiple countries.</div></div>
+      <div class="del-card"><div class="del-icon">📊</div><div class="del-title">Audit Trail</div><div class="del-desc">Every upload is logged with filename, row count, outcome, and timestamp.</div></div>
+      <div class="del-card"><div class="del-icon">☁️</div><div class="del-title">Cloud Hosted</div><div class="del-desc">Frontend deployed on AWS Amplify CDN. API served from Express on Node.js.</div></div>
+    </div>
+  </section>
+
+  <!-- 1. CONTEXT DIAGRAM -->
+  <section id="context" class="reveal">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div><div class="section-title">Context Diagram</div><div class="section-desc">Who uses the system and what external entities does it touch?</div></div>
+    </div>
+    <div class="ctx-diagram">
+      <div class="ctx-node n-csv"><div class="icon">📄</div>CSV Price Feeds<br/>(Operations)</div>
+      <div class="ctx-arrow">──▶</div>
+      <div class="ctx-node n-actor"><div class="icon">👤</div>Store Manager<br/>(Admin User)</div>
+      <div class="ctx-arrow">──▶</div>
+      <div class="ctx-node n-cloud"><div class="icon">☁️</div>AWS Amplify<br/>(React SPA)</div>
+      <div class="ctx-arrow">──▶</div>
+      <div class="ctx-node n-system"><div class="icon">⚙️</div>Express API<br/>(port 4000)</div>
+      <div class="ctx-arrow">──▶</div>
+      <div class="ctx-node n-db"><div class="icon">🗄️</div>SQLite3<br/>Database</div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">🔄 Interaction Summary</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Actor / Entity</th><th>Interaction</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td>Store Manager</td><td>Upload CSV files, search records, edit individual entries</td><td><span class="badge badge-b">Initiates</span></td></tr>
+            <tr><td>CSV Price Feeds</td><td>Retail pricing data (Store ID, SKU, Product Name, Price, Date)</td><td><span class="badge badge-g">Input</span></td></tr>
+            <tr><td>AWS Amplify</td><td>Serves the React SPA; handles CDN and SSL termination</td><td><span class="badge badge-a">Hosting</span></td></tr>
+            <tr><td>Express API</td><td>Validates uploads, processes queries, enforces security middleware</td><td><span class="badge badge-b">Processes</span></td></tr>
+            <tr><td>SQLite3 DB</td><td>Persists pricing records and upload audit logs atomically</td><td><span class="badge badge-a">Stores</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. SOLUTION ARCHITECTURE -->
+  <section id="architecture" class="reveal">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div><div class="section-title">Solution Architecture</div><div class="section-desc">Component layers and data flows</div></div>
+    </div>
+
+    <div class="arch-layer layer-fe">
+      <div class="arch-layer-header">🖥️ Frontend — Browser (AWS Amplify / localhost:5173)</div>
+      <div class="arch-layer-body">
+        <div class="arch-chip"><span class="ch-title">App.tsx</span><span class="ch-sub">Router + Nav</span></div>
+        <div class="arch-chip"><span class="ch-title">UploadPage.tsx</span><span class="ch-sub">useQuery + useMutation</span></div>
+        <div class="arch-chip"><span class="ch-title">SearchPage.tsx</span><span class="ch-sub">useQuery (activeFilters)</span></div>
+        <div class="arch-chip"><span class="ch-title">UploadDropzone</span><span class="ch-sub">Drag-and-drop</span></div>
+        <div class="arch-chip"><span class="ch-title">FilterBar</span><span class="ch-sub">7 search inputs + sort</span></div>
+        <div class="arch-chip"><span class="ch-title">PricingTable + Cell</span><span class="ch-sub">Inline edit grid</span></div>
+        <div class="arch-chip"><span class="ch-title">Pagination</span><span class="ch-sub">Ellipsis strip (±2)</span></div>
+        <div class="arch-chip"><span class="ch-title">TanStack QueryClient</span><span class="ch-sub">30s cache · auto-invalidation</span></div>
+        <div class="arch-chip"><span class="ch-title">api/pricing.ts (Axios)</span><span class="ch-sub">uploadCsv · search · update · logs</span></div>
+        <div class="arch-chip"><span class="ch-title">types/pricing.ts</span><span class="ch-sub">PricingRecord · UploadLog · Filters</span></div>
+      </div>
+    </div>
+
+    <div class="arch-layer layer-be">
+      <div class="arch-layer-header">⚙️ Backend — Express Server (localhost:4000)</div>
+      <div class="arch-layer-body">
+        <div class="arch-chip"><span class="ch-title">app.js</span><span class="ch-sub">helmet · cors · morgan · rate-limit</span></div>
+        <div class="arch-chip"><span class="ch-title">routes/pricing.js</span><span class="ch-sub">POST /upload · GET / · PUT /:id</span></div>
+        <div class="arch-chip"><span class="ch-title">validatePricing.js</span><span class="ch-sub">validateCsvRow + PUT validators</span></div>
+        <div class="arch-chip"><span class="ch-title">errorHandler.js</span><span class="ch-sub">Multer · Validation · 500 errors</span></div>
+        <div class="arch-chip"><span class="ch-title">db.js</span><span class="ch-sub">Schema · Indexes · Prepared stmts</span></div>
+        <div class="arch-chip"><span class="ch-title">multer + PapaParse</span><span class="ch-sub">MIME check · in-memory CSV parse</span></div>
+      </div>
+    </div>
+
+    <div class="arch-layer layer-db">
+      <div class="arch-layer-header">🗄️ Database — SQLite3 WAL Mode</div>
+      <div class="arch-layer-body">
+        <div class="arch-chip"><span class="ch-title">pricing_records</span><span class="ch-sub">id · store_id · sku · product_name · price · record_date · upload_id</span></div>
+        <div class="arch-chip"><span class="ch-title">upload_logs</span><span class="ch-sub">id · file_name · row_count · status · created_at</span></div>
+        <div class="arch-chip"><span class="ch-title">5 Covering Indexes</span><span class="ch-sub">store_id · sku · date · (store,sku) · product_name</span></div>
+        <div class="arch-chip"><span class="ch-title">WAL + PRAGMA</span><span class="ch-sub">64MB cache · synchronous=NORMAL</span></div>
+      </div>
+    </div>
+
+    <div class="arch-layer layer-host">
+      <div class="arch-layer-header">☁️ Hosting — AWS Amplify</div>
+      <div class="arch-layer-body">
+        <div class="arch-chip"><span class="ch-title">amplify.yml</span><span class="ch-sub">appRoot: client · baseDir: dist</span></div>
+        <div class="arch-chip"><span class="ch-title">VITE_API_URL</span><span class="ch-sub">Points to production Express URL</span></div>
+        <div class="arch-chip"><span class="ch-title">CDN Static Hosting</span><span class="ch-sub">SSL · global edge caching</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">📤 Upload Flow</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="flow-step"><span class="flow-num">1</span><span>User drops or selects CSV → Axios POSTs multipart/form-data with <code>onUploadProgress</code> → progress bar updates live</span></div>
+        <div class="flow-step"><span class="flow-num">2</span><span>Express: multer checks MIME type + file size → PapaParse parses buffer → 5 required columns validated</span></div>
+        <div class="flow-step"><span class="flow-num">3</span><span>Every row validated via <code>validateCsvRow()</code> → if any fail, 422 with full error list returned to UI</span></div>
+        <div class="flow-step"><span class="flow-num">4</span><span>All rows valid → single SQLite transaction: INSERT upload_log + all N pricing_records atomically</span></div>
+        <div class="flow-step"><span class="flow-num">5</span><span>201 success → TanStack Query invalidates <code>['upload-logs']</code> cache → history auto-refreshes</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔌 REST API Endpoints</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method m-post">POST</span></td><td><code>/api/pricing/upload</code></td><td>Upload CSV — validate all rows, bulk-insert in transaction</td></tr>
+            <tr><td><span class="method m-get">GET</span></td><td><code>/api/pricing</code></td><td>List / filter records — 7 filters + pagination + sort</td></tr>
+            <tr><td><span class="method m-put">PUT</span></td><td><code>/api/pricing/:id</code></td><td>Partial update — any subset of the 5 pricing fields</td></tr>
+            <tr><td><span class="method m-get">GET</span></td><td><code>/api/pricing/upload-logs</code></td><td>Paginated upload audit history</td></tr>
+            <tr><td><span class="method m-get">GET</span></td><td><code>/health</code></td><td>Health check — <code>{ status: "ok", ts: "..." }</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. DESIGN DECISIONS -->
+  <section id="decisions" class="reveal">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div><div class="section-title">Design Decisions</div><div class="section-desc">Key architectural choices and the rationale behind them</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Decision</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>D1</td><td><strong>SQLite + better-sqlite3</strong></td><td>Zero infrastructure. Synchronous API simplifies Express handlers. WAL enables concurrent reads.</td></tr>
+          <tr><td>D2</td><td><strong>All-or-nothing CSV validation</strong></td><td>Every row validated before any write. No partial state. Users get a full error list to fix before re-uploading.</td></tr>
+          <tr><td>D3</td><td><strong>In-memory CSV parsing</strong></td><td>multer memoryStorage + PapaParse from Buffer. No temp files. Header normalisation makes format forgiving.</td></tr>
+          <tr><td>D4</td><td><strong>Atomic bulk insert transaction</strong></td><td>upload_log + all pricing_records in one transaction. Any failure rolls everything back. Audit log stays in sync.</td></tr>
+          <tr><td>D5</td><td><strong>ORDER BY allowlist</strong></td><td>sortBy / sortDir validated against hardcoded arrays before SQL interpolation — prevents ORDER BY injection.</td></tr>
+          <tr><td>D6</td><td><strong>Axios HTTP client</strong></td><td>Clean instance config, interceptors for error standardisation, automatic serialisation, and native <code>onUploadProgress</code>.</td></tr>
+          <tr><td>D7</td><td><strong>Vite /api proxy</strong></td><td>Proxies <code>/api</code> to port 4000 in dev. Eliminates CORS issues. Production uses <code>VITE_API_URL</code> env var.</td></tr>
+          <tr><td>D8</td><td><strong>5 covering indexes</strong></td><td>On store_id, sku, record_date, (store_id,sku), product_name — matching the most common filter patterns.</td></tr>
+          <tr><td>D9</td><td><strong>COALESCE partial UPDATE</strong></td><td>PUT endpoint only needs changed fields. Inline editor sends only modified fields, reducing payload and risk.</td></tr>
+          <tr><td>D10</td><td><strong>Centralised error handler</strong></td><td>One middleware handles multer, validation, and 500 errors uniformly. Stack traces suppressed in production.</td></tr>
+          <tr><td>D11</td><td><strong>TanStack Query</strong></td><td>Replaces manual loading/error state boilerplate. 30s cache, auto-refetch on mutation, optimistic cache patches.</td></tr>
+          <tr><td>D12</td><td><strong>filters vs activeFilters split</strong></td><td>FilterBar updates <code>filters</code> (local). Search click copies to <code>activeFilters</code> (query key). No network call on each keystroke.</td></tr>
+          <tr><td>D13</td><td><strong>Dynamic CORS for localhost</strong></td><td>In dev, any <code>http://localhost:*</code> port is allowed. Fixes port conflicts when Vite auto-increments port numbers.</td></tr>
+          <tr><td>D14</td><td><strong>Cell component in PricingTable</strong></td><td>Reusable <code>&lt;Cell&gt;</code> component halves the JSX needed for each editable column.</td></tr>
+          <tr><td>D15</td><td><strong>AWS Amplify static hosting</strong></td><td>Frontend deployed to Amplify CDN. amplify.yml points appRoot to /client. architecture.html placed in /public.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4. NFR -->
+  <section id="nfr" class="reveal">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div><div class="section-title">Non-Functional Requirements</div><div class="section-desc">Designed for a retail chain with 3,000+ stores across multiple countries</div></div>
+    </div>
+    <div class="grid-3" style="margin-bottom:24px">
+      <div class="stat-card"><div class="stat-val">50 MB</div><div class="stat-label">Max Upload Size</div><div class="stat-desc">Configurable via <code>UPLOAD_SIZE_LIMIT_MB</code></div></div>
+      <div class="stat-card"><div class="stat-val">200 rps</div><div class="stat-label">Rate Limit</div><div class="stat-desc">200 requests / 60 s per IP via express-rate-limit</div></div>
+      <div class="stat-card"><div class="stat-val">30 s</div><div class="stat-label">Client Cache</div><div class="stat-desc">TanStack Query stale time</div></div>
+      <div class="stat-card"><div class="stat-val">64 MB</div><div class="stat-label">DB Page Cache</div><div class="stat-desc">SQLite PRAGMA cache_size = -64000</div></div>
+      <div class="stat-card"><div class="stat-val">5</div><div class="stat-label">Covering Indexes</div><div class="stat-desc">Matching common filter / sort patterns</div></div>
+      <div class="stat-card"><div class="stat-val">1 TX</div><div class="stat-label">Atomic Ingestion</div><div class="stat-desc">All rows inserted in a single transaction</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🔒 Security</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Threat</th><th>Mitigation</th></tr></thead>
+            <tbody>
+              <tr><td>Header attacks</td><td>helmet CSP, HSTS, X-XSS-Protection</td></tr>
+              <tr><td>CORS abuse</td><td>Origin allowlist; dynamic localhost in dev only</td></tr>
+              <tr><td>Malicious uploads</td><td>multer rejects non-CSV MIME (415) + oversized (413)</td></tr>
+              <tr><td>SQL injection (filters)</td><td>Parameterised prepared statements for all values</td></tr>
+              <tr><td>SQL injection (sort)</td><td>sortBy / sortDir validated against hardcoded allowlists</td></tr>
+              <tr><td>Input tampering</td><td>express-validator checks type + length for every PUT field</td></tr>
+              <tr><td>Info leakage</td><td>Stack traces stripped in <code>NODE_ENV=production</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 Reliability & Integrity</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Concern</th><th>Implementation</th></tr></thead>
+            <tbody>
+              <tr><td>Atomic uploads</td><td>Entire bulk insert in single SQLite transaction</td></tr>
+              <tr><td>Audit trail</td><td>upload_logs records every attempt with outcome</td></tr>
+              <tr><td>Referential integrity</td><td>PRAGMA foreign_keys = ON</td></tr>
+              <tr><td>Graceful shutdown</td><td>SIGTERM/SIGINT handlers drain in-flight requests</td></tr>
+              <tr><td>DB durability</td><td>WAL + synchronous=NORMAL</td></tr>
+              <tr><td>Optimistic updates</td><td>setQueryData patches cache in-place after PUT</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🎨 Usability & Maintainability</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Goal</th><th>Implementation</th></tr></thead>
+          <tbody>
+            <tr><td>Frictionless upload</td><td>Drag-and-drop zone, progress bar, inline CSV format hint</td></tr>
+            <tr><td>Actionable errors</td><td>Row-level error strings shown in scrollable list</td></tr>
+            <tr><td>No-reload editing</td><td>Optimistic cache patch via <code>setQueryData</code> — no page refresh</td></tr>
+            <tr><td>Responsive layout</td><td>TailwindCSS <code>sm: lg: xl:</code> breakpoints throughout</td></tr>
+            <tr><td>Env-driven config</td><td>PORT, DB_PATH, CORS_ORIGIN, UPLOAD_SIZE_LIMIT_MB in <code>.env</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. ASSUMPTIONS -->
+  <section id="assumptions" class="reveal">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div><div class="section-title">Assumptions</div><div class="section-desc">Design constraints and accepted trade-offs</div></div>
+    </div>
+    <ul class="assumption-list">
+      <li><span class="ai">🔐</span><div><strong>Internal users only — no auth layer</strong>Trusted retail operations staff. Adding OAuth/JWT would be the first production hardening step.</div></li>
+      <li><span class="ai">📄</span><div><strong>CSV format contract</strong>Feeds always contain the five required columns. Header matching is case-insensitive and whitespace-tolerant.</div></li>
+      <li><span class="ai">📦</span><div><strong>Reasonable file sizes</strong>Uploads expected to stay under 50 MB per file, configurable via <code>UPLOAD_SIZE_LIMIT_MB</code>.</div></li>
+      <li><span class="ai">🖥️</span><div><strong>Single-server deployment</strong>SQLite suits one process. Horizontal scaling requires migrating to PostgreSQL.</div></li>
+      <li><span class="ai">➕</span><div><strong>Append-only ingestion</strong>Uploads always insert new rows. Duplicates permitted; de-duplication can be added if required.</div></li>
+      <li><span class="ai">📅</span><div><strong>Date format flexibility</strong>Any date parseable by <code>new Date()</code> is accepted and normalised to YYYY-MM-DD in storage.</div></li>
+      <li><span class="ai">🚀</span><div><strong>Node.js v18+ runtime</strong>A process manager (pm2 / systemd) is expected in production for restarts and log rotation.</div></li>
+    </ul>
+  </section>
+
+  <!-- 6. SOURCE -->
+  <section id="source" class="reveal">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <div><div class="section-title">Source for the Implementation</div><div class="section-desc">Project structure, how to run, and GitHub link</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📁 Directory Structure</div>
+        <pre><span class="fn">tigeraAlytics/</span>
+<span class="cm">├── ARCHITECTURE.md</span>
+<span class="cm">├── ARCHITECTURE_VISUAL.html</span>
+<span class="cm">├── PROJECT_BRIEF.html       ← this file</span>
+<span class="cm">├── amplify.yml</span>
+<span class="cm">├── README.md</span>
+<span class="cm">├── sample_feed.csv</span>
+<span class="cm">│</span>
+<span class="fn">├── server/src/</span>
+<span class="cm">│   ├── index.js</span>
+<span class="cm">│   ├── app.js</span>
+<span class="cm">│   ├── db.js</span>
+<span class="cm">│   ├── routes/pricing.js</span>
+<span class="cm">│   └── middleware/</span>
+<span class="cm">│       ├── validatePricing.js</span>
+<span class="cm">│       └── errorHandler.js</span>
+<span class="cm">│</span>
+<span class="fn">└── client/src/</span>
+<span class="cm">    ├── api/pricing.ts</span>
+<span class="cm">    ├── types/pricing.ts</span>
+<span class="cm">    ├── pages/</span>
+<span class="cm">    │   ├── UploadPage.tsx</span>
+<span class="cm">    │   └── SearchPage.tsx</span>
+<span class="cm">    └── components/</span>
+<span class="cm">        ├── UploadDropzone.tsx</span>
+<span class="cm">        ├── FilterBar.tsx</span>
+<span class="cm">        ├── PricingTable.tsx</span>
+<span class="cm">        └── Pagination.tsx</span></pre>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title">▶️ Run Locally</div>
+          <pre><span class="cm"># Terminal 1 — Backend</span>
+<span class="kw">cd</span> server <span class="op">&amp;&amp;</span> npm install <span class="op">&amp;&amp;</span> npm run dev
+<span class="cm"># → http://localhost:4000</span>
+
+<span class="cm"># Terminal 2 — Frontend</span>
+<span class="kw">cd</span> client <span class="op">&amp;&amp;</span> npm install <span class="op">&amp;&amp;</span> npm run dev
+<span class="cm"># → http://localhost:5173</span>
+
+<span class="cm"># Quick smoke test</span>
+<span class="fn">curl</span> -F <span class="str">"file=@sample_feed.csv"</span> \
+  http://localhost:4000/api/pricing/upload</pre>
+        </div>
+        <div class="card">
+          <div class="card-title">📂 GitHub Repository</div>
+          <p style="color:var(--txt-muted);font-size:14px;margin-bottom:12px">Source code, architecture docs, sample data, and Amplify deploy config.</p>
+          <a class="gh-btn" href="https://github.com/bharathikannano/tigeranalytics" target="_blank" rel="noopener noreferrer">
+            🔗 github.com/bharathikannano/tigeranalytics
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔎 Sample Query — Store &amp; SKU Lookup</div>
+      <pre><span class="cm"># API call</span>
+<span class="fn">curl</span> -s <span class="str">"http://localhost:4000/api/pricing?storeId=STORE-001&amp;sku=ABC-001"</span>
+
+<span class="cm">-- Underlying SQL (parameterised prepared statement)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> pricing_records
+<span class="kw">WHERE</span>  store_id <span class="kw">LIKE</span> @storeId <span class="kw">AND</span> sku <span class="kw">LIKE</span> @sku
+<span class="kw">ORDER BY</span> created_at <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="ty">50</span> <span class="kw">OFFSET</span> <span class="ty">0</span>;
+<span class="cm">-- uses covering index idx_pricing_store_sku (store_id, sku)</span></pre>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p style="margin-bottom:8px">
+      Retail Pricing Feed Management System &middot;
+      <a href="https://github.com/bharathikannano/tigeranalytics" target="_blank" rel="noopener noreferrer">GitHub</a> &middot;
+      React 18 + Express + SQLite + AWS Amplify
+    </p>
+    <p>Full architecture &rarr; <a href="./ARCHITECTURE_VISUAL.html">ARCHITECTURE_VISUAL.html</a></p>
+  </footer>
+</div>
+
+<script>
+  const obs = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.08 }
+  );
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
