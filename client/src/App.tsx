@@ -7,15 +7,17 @@
 //   <footer>  — simple credit line
 //
 // Routes:
-//   /               → UploadPage   (upload CSV feeds)
-//   /search         → SearchPage   (search & edit records)
-//   /architecture   → ArchitecturePage (system diagram)
+//   /               → UploadPage        (upload CSV feeds)
+//   /search         → SearchPage        (search & edit records)
+//   /architecture   → ArchitecturePage  (system diagram)
+//   /brief          → BriefPage         (project deliverables brief)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
 import UploadPage       from './pages/UploadPage';
 import SearchPage       from './pages/SearchPage';
 import ArchitecturePage from './pages/ArchitecturePage';
+import BriefPage        from './pages/BriefPage';
 
 // NavItem wraps <NavLink> and applies an active/inactive style automatically
 function NavItem({ to, label }: { to: string; label: string }) {
@@ -56,6 +58,7 @@ export default function App() {
               <NavItem to="/"             label="⬆ Upload Feeds" />
               <NavItem to="/search"       label="🔍 Search & Edit" />
               <NavItem to="/architecture" label="🏗️ Architecture" />
+              <NavItem to="/brief"        label="📋 Project Brief" />
             </nav>
           </div>
         </header>
@@ -75,6 +78,7 @@ export default function App() {
               </div>
             } />
             <Route path="/architecture" element={<ArchitecturePage />} />
+            <Route path="/brief"        element={<BriefPage />} />
           </Routes>
         </main>
 
